@@ -4,10 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const Client = require('ssh2-sftp-client');
 
-const app = express();
-
-const username = 'YOUR-SFTP-USERNAME';
-const password = 'YOUR-SFTP-PASSWORD';
+const username = 'SFTP-USERNAME';
+const password = 'SFTP-PASSWORD';
 
 // Set up Multer for file upload with disk storage
 const upload = multer({
@@ -19,7 +17,7 @@ const upload = multer({
 });
 
 // Endpoint to handle file upload
-app.post('/upload', upload.single('file'), async (req, res) => {
+const handleFileUpload = async (req, res) => {
   const sftp = new Client();
   const tempPath = req.file.path;
   const remotePath = `/home/${username}/${req.file.originalname}`;
@@ -48,10 +46,11 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     await sftp.end();
   }
-});
+};
 
-// Start the server
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-  });
+module.exports = {
+  upload,
+  handleFileUpload,
+};
+
   

@@ -4,18 +4,13 @@ const fs = require('fs');
 const path = require('path');
 const Client = require('ssh2-sftp-client');
 
-const app = express();
-
-const username = 'YOUR-SFTP-USERNAME';
-const password = 'YOUR-SFTP-PASSWORD';
+const username = 'SFTP-USERNAME';
+const password = 'SFTP-PASSWORD';
 
 // Endpoint to download a file from the remote server
-app.get('/download/:filename', async (req, res) => {
+const handleFileDownload = async (req, res, filename) => {
     const sftp = new Client();
-    // As temp file path
-    const filename = 'AnyDesk.exe';
-    const remotePath = `/home/wibawa/${filename}`;
-    const tempFilePath = path.join(__dirname, 'temp', filename);
+    const remotePath = `/home/${username}/${filename}`;
   
     try {
       await sftp.connect({
@@ -42,9 +37,8 @@ app.get('/download/:filename', async (req, res) => {
     } finally {
         await sftp.end();
     }
-  });
-  
-// Start the server
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-  });
+};
+
+module.exports = {
+  handleFileDownload,
+};
