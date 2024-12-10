@@ -61,13 +61,13 @@ async function deleteUser(id) {
     }
 }
 
-async function updateUser(id, username, email, password, role) {
+async function updateUser(id, username, email, password, role, usedStorage) {
     try {
         const [result] = await pool.query(`
             UPDATE users 
-            SET username = ?, email = ?, password = ?, role = ?
+            SET username = ?, email = ?, password = ?, role = ?, usedStorage = ?
             WHERE userID = ?
-            `, [username, email, password, role, id])
+            `, [username, email, password, role, usedStorage, id])
         return result
     } catch (error) {
         console.error(error)
