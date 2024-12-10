@@ -6,8 +6,8 @@ const Client = require('ssh2-sftp-client');
 
 const app = express();
 
-const username = 'wibawa';
-const password = 'wibawa123';
+const username = 'YOUR-SFTP-USERNAME';
+const password = 'YOUR-SFTP-PASSWORD';
 
 // Endpoint to download a file from the remote server
 app.get('/download/:filename', async (req, res) => {
