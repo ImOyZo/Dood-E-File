@@ -10,10 +10,10 @@ const pool = mysql.createPool({
     database: process.env.MYSQL_DATABASE
 }).promise()
 
-async function fetchFiles(ownerID) {
+async function fetchFolders(ownerID) {
     try {
         const [result] = await pool.query(`
-            SELECT * FROM file 
+            SELECT * FROM folder 
             WHERE ownerID = ?
             `, [ownerID])
         return result
@@ -23,13 +23,13 @@ async function fetchFiles(ownerID) {
     }
 }
 
-async function fetchFile(ownerID, fileName) {
+async function fetchFolder(ownerID, folderName) {
     try {
         const [result] = await pool.query(`
             SELECT *
-            FROM file
-            WHERE ownerID = ? AND fileName = ?
-            `, [ownerID, fileName])
+            FROM folder
+            WHERE ownerID = ? AND folderName = ?
+            `, [ownerID, folderName])
         return result[0]
     } catch (error) {
         console.error(error)
@@ -37,25 +37,25 @@ async function fetchFile(ownerID, fileName) {
     }
 }
 
-async function createFile(fileName, fileType, fileSize, ownerID, path) {
+async function createFolder(folderName, ownerID, path) {
     try {
         const [result] = await pool.query(`
-            INSERT INTO file (fileName, fileType, fileSize, ownerID, path)
-            VALUES (?, ?, ?, ?, ?)
-            `, [fileName, fileType, fileSize, ownerID, path])
-        return fetchFile(ownerID, fileName)
+            INSERT INTO folder (folderName, ownerID, path)
+            VALUES (?, ?, ?)
+            `, [folderName, ownerID, path])
+        return fetchFolder(ownerID, folderName)
     } catch (error) {
         console.error(error)
         return error
     }
 }
 
-async function deleteFile(ownerID, fileName) {
+async function deleteFolder(ownerID, folderName) {
     try {
         const [result] = await pool.query(`
-            DELETE FROM file
-            WHERE ownerID = ? AND fileName = ?
-            `, [ownerID, fileName])
+            DELETE FROM folder
+            WHERE ownerID = ? AND folderName = ?
+            `, [ownerID, folderName])
         return result
     } catch (error) {
         console.error(error)
@@ -63,13 +63,13 @@ async function deleteFile(ownerID, fileName) {
     }
 }
 
-async function updateFile(ownerID, oldFileName, newFileName, path) {
+async function updateFolder(ownerID, oldFolderName, newFolderName, path) {
     try {
         const [result] = await pool.query(`
-            UPDATE file 
-            SET fileName = ?, path = ?
-            WHERE ownerID = ? AND fileName = ?
-            `, [newFileName, path, ownerID, oldFileName])
+            UPDATE folder
+            SET folderName = ?, path = ?
+            WHERE ownerID = ? AND folderName = ?
+            `, [newFolderName, path, ownerID, oldFolderName])
         return result
     } catch (error) {
         console.error(error)
