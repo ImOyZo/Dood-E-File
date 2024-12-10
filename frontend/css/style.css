@@ -1,0 +1,20 @@
+.nav-link.active {
+  font-weight: bold;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+}
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.navbar-brand {
+  font-size: 24px;
+  font-weight: bold;
+}
