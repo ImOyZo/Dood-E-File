@@ -10,9 +10,12 @@ const pool = mysql.createPool({
     database: process.env.MYSQL_DATABASE
 }).promise()
 
-async function fetchUsers() {
+async function fetchFiles(ownerID) {
     try {
-        const [result] = await pool.query("SELECT * FROM users")
+        const [result] = await pool.query(`
+            SELECT * FROM file 
+            WHERE ownerID = ?
+            `, [ownerID])
         return result
     } catch (error) {
         console.error(error)
@@ -20,13 +23,13 @@ async function fetchUsers() {
     }
 }
 
-async function fetchUsersFromID(id) {
+async function fetchFile(ownerID, fileName) {
     try {
         const [result] = await pool.query(`
             SELECT *
-            FROM users
-            WHERE userID = ?
-            `, [id])
+            FROM file
+            WHERE ownerID = ? AND fileName = ?
+            `, [ownerID, fileName])
         return result[0]
     } catch (error) {
         console.error(error)
@@ -34,26 +37,25 @@ async function fetchUsersFromID(id) {
     }
 }
 
-async function createUser(username, email, password, role) {
+async function createFile(fileName, fileType, fileSize, ownerID) {
     try {
         const [result] = await pool.query(`
-            INSERT INTO users (username, email, password, role)
+            INSERT INTO file (fileName, fileType, fileSize, ownerID)
             VALUES (?, ?, ?, ?)
-            `, [username, email, password, role])
-        const id = result.insertId
-        return fetchUsersFromID(id)
+            `, [fileName, fileType, fileSize, ownerID])
+        return fetchFile(ownerID, fileName)
     } catch (error) {
         console.error(error)
         return error
     }
 }
 
-async function deleteUser(id) {
+async function deleteFile(ownerID, fileName) {
     try {
         const [result] = await pool.query(`
-            DELETE FROM users
-            WHERE userID = ?
-            `, [id])
+            DELETE FROM file
+            WHERE ownerID = ? AND fileName = ?
+            `, [ownerID, fileName])
         return result
     } catch (error) {
         console.error(error)
@@ -61,13 +63,13 @@ async function deleteUser(id) {
     }
 }
 
-async function updateUser(id, username, email, password, role) {
+async function updateFile(ownerID, oldFileName, newFileName) {
     try {
         const [result] = await pool.query(`
-            UPDATE users 
-            SET username = ?, email = ?, password = ?, role = ?
-            WHERE userID = ?
-            `, [username, email, password, role, id])
+            UPDATE file 
+            SET fileName = ?
+            WHERE ownerID = ? AND fileName = ?
+            `, [newFileName, ownerID, oldFileName])
         return result
     } catch (error) {
         console.error(error)
