@@ -20,6 +20,15 @@ body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.login-container a{
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    color: #4A4AFE;
+    text-decoration: none;
+    font-size: 14px;
+}
+
 .login-container h1 {
     color: #4A4AFE;
     margin-bottom: 10px;
