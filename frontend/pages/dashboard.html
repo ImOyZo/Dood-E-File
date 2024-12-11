@@ -89,7 +89,7 @@
             </button>
           </div>
           <div class="plusicon fixed-bottom-right">
-            <a href="upload.html" id="plus"><i data-feather="plus"></i></a>
+            <a id="plus" data-bs-toggle="modal" data-bs-target="#uploadModal"><i data-feather="plus"></i></a>
           </div>
           <div class="row g-3">
             <!-- Example File Cards -->
@@ -140,8 +140,33 @@
       </div>
     </div>
 
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="uploadModalLabel">Upload Document</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <div class="upload-zone" id="upload-zone">
+                      <i class="bi bi-upload upload-icon"></i>
+                      <p class="mt-2">Drag and drop your file here, or <label for="file-upload" class="text-primary">browse</label></p>
+                      <input type="file" id="file-upload" accept=".pdf,.doc,.docx,.txt">
+                  </div>
+                  <button class="btn btn-primary btn-upload">Upload</button>
+
+                  <div id="file-info" class="file-info d-none">
+                      <span class="file-name" id="file-name"></span>
+                      <button class="btn btn-danger btn-sm" id="remove-file">Remove</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>
     <script>
       feather.replace();
     </script>
