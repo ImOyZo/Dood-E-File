@@ -1,6 +1,11 @@
-.nav-link.active {
+.nav-item {
   font-weight: bold;
-  background-color: #f0f0f0;
+  border-radius: 5px;
+}
+
+.nav-item:hover {
+  font-weight: bold;
+  background-color: #2f16ee;
   border-radius: 5px;
 }
 
@@ -17,4 +22,34 @@
 .navbar-brand {
   font-size: 24px;
   font-weight: bold;
+}
+
+.fixed-bottom-right {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1050;
+  background-color: #007bff;
+  padding: 15px;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.fixed-bottom-right a {
+  color: white;
+  text-decoration: none;
+}
+
+.fixed-bottom-right:hover {
+  background-color: #0056b3;
+}
+
+.upload {
+  border: 5px solid #ddd;
+  border-radius: 10px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.card-title {
+  height: 100px;
 }
