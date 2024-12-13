@@ -81,26 +81,38 @@
         <div class="col-md-9 col-lg-10 p-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h4>My Drive</h4>
-            <button
-              class="btn btn-outline-secondary dropdown-toggle"
-              type="button"
-            >
-              Sort by
-            </button>
+            <div class="dropdown">
+              <button
+                class="btn btn-outline-secondary dropdown-toggle"
+                type="button"
+                id="sortDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Sort by
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                <li>
+                  <button class="dropdown-item" onclick="sortFiles('name')">Name</button>
+                </li>
+                <li>
+                  <button class="dropdown-item" onclick="sortFiles('size')">Size</button>
+                </li>
+                <li>
+                  <button class="dropdown-item" onclick="sortFiles('date')">Date</button>
+                </li>
+              </ul>
+            </div>
           </div>
           <div class="plusicon fixed-bottom-right">
-            <a href="upload.html" id="plus"><i data-feather="plus"></i></a>
+            <a id="plus" data-bs-toggle="modal" data-bs-target="#uploadModal"><i data-feather="plus"></i></a>
           </div>
-          <div class="row g-3">
+          <div class="row g-3" id="fileContainer">
             <!-- Example File Cards -->
-            <div class="col-6 col-sm-4 col-md-3">
+            <div class="col-6 col-sm-4 col-md-3 file-card" data-name="Document.docx" data-size="18" data-date="2024-12-12">
               <div class="card">
                 <div class="card-body text-center">
-                  <i
-                    data-feather="file"
-                    class="text-primary mb-2"
-                    style="width: 50px; height: 50px"
-                  ></i>
+                  <i data-feather="file" class="text-primary mb-2" style="width: 50px; height: 50px"></i>
                   <h6 class="card-title">Document.docx</h6>
                   <p class="text-muted small">18 KB</p>
                   <p class="text-muted small">12-12-2024</p>
@@ -108,14 +120,10 @@
                 </div>
               </div>
             </div>
-            <div class="col-6 col-sm-4 col-md-3">
+            <div class="col-6 col-sm-4 col-md-3 file-card" data-name="Image.jpg" data-size="18" data-date="2024-12-12">
               <div class="card">
                 <div class="card-body text-center">
-                  <i
-                    data-feather="image"
-                    class="text-primary mb-2"
-                    style="width: 50px; height: 50px"
-                  ></i>
+                  <i data-feather="image" class="text-primary mb-2" style="width: 50px; height: 50px"></i>
                   <h6 class="card-title">Image.jpg</h6>
                   <p class="text-muted small">18 KB</p>
                   <p class="text-muted small">12-12-2024</p>
@@ -123,14 +131,10 @@
                 </div>
               </div>
             </div>
-            <div class="col-6 col-sm-4 col-md-3">
+            <div class="col-6 col-sm-4 col-md-3 file-card" data-name="Project Files" data-size="18" data-date="2024-12-12">
               <div class="card">
                 <div class="card-body text-center">
-                  <i
-                    data-feather="folder"
-                    class="text-primary mb-2"
-                    style="width: 50px; height: 50px"
-                  ></i>
+                  <i data-feather="folder" class="text-primary mb-2" style="width: 50px; height: 50px"></i>
                   <h6 class="card-title">Project Files</h6>
                   <p class="text-muted small">18 KB</p>
                   <p class="text-muted small">12-12-2024</p>
@@ -140,11 +144,34 @@
             </div>
           </div>
         </div>
+
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="uploadModalLabel">Upload Document</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <div class="upload-zone" id="upload-zone">
+                      <i class="bi bi-upload upload-icon"></i>
+                      <p class="mt-2">Drag and drop your file here, or <label for="file-upload" class="text-primary">browse</label></p>
+                      <input type="file" id="file-upload" accept=".pdf,.doc,.docx,.txt">
+                  </div>
+                  <button class="btn btn-primary btn-upload">Upload</button>
+
+                  <div id="file-info" class="file-info d-none">
+                      <span class="file-name" id="file-name"></span>
+                      <button class="btn btn-danger btn-sm" id="remove-file">Remove</button>
+                  </div>
+              </div>
+          </div>
       </div>
-    </div>
+  </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>
     <script>
       feather.replace();
     </script>

@@ -5,7 +5,7 @@
 
 .nav-item:hover {
   font-weight: bold;
-  background-color: #2f16ee;
+  background-color: #7665f652;
   border-radius: 5px;
 }
 
@@ -32,7 +32,9 @@
   background-color: #007bff;
   padding: 15px;
   border-radius: 50%;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px #00000033;
+  transition: transform 0.4s ease-in-out;
+  transition:  0.2s linear;
 }
 
 .fixed-bottom-right a {
@@ -40,9 +42,16 @@
   text-decoration: none;
 }
 
-.fixed-bottom-right:hover {
-  background-color: #0056b3;
+.fixed-bottom-right:active {
+  transform: translateY(-5px);
+  border-radius: 75%;
 }
+
+.fixed-bottom-right:hover {
+  background-color: #8dc4fe;
+}
+
+.fixed-bottom-right:on
 
 .upload {
   border: 5px solid #ddd;
@@ -54,6 +63,7 @@
   height: 100px;
 }
 
+<<<<<<< HEAD
 .card {
   position: relative; /* Pastikan ikon akan diposisikan relatif terhadap card */
 }
@@ -64,3 +74,71 @@
   right: 10px; /* Jarak dari kanan */
   cursor: pointer; /* Menambahkan pointer saat dihover */
 }
+=======
+body {
+  background-color: #f8f9fa;
+  font-family: Arial, sans-serif;
+}
+
+.modal-content {
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.upload-icon {
+  font-size: 40px;
+  color: #6c757d;
+}
+
+.upload-zone {
+  border: 2px dashed #ced4da;
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.upload-zone:hover {
+  border-color: #495057;
+}
+
+.upload-zone input[type="file"] {
+  display: none;
+}
+
+.btn-upload {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.file-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  padding: 10px;
+  background: #e9ecef;
+  border-radius: 5px;
+}
+
+.file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 80%;
+}
+
+#sortDropdown:hover {
+  background-color: #007bffb8;
+}
+
+#sortDropdown:focus {
+  background-color: #007bff;
+}
+
+.dropdown-item:focus {
+  background-color: #f8f9fa96;
+  color: black;
+}
+>>>>>>> 7c1062c89db3a90808cf3c84ef7acec8eef820d5
