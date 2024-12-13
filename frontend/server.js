@@ -1,96 +1,82 @@
 const express = require('express');
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const app = express();
 
-//db connection
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: 'localhost',
-  user: 'root', 
-  password: '', 
-  database: 'loginbase' //ni sesuaiin aja ma db nanti
+  user: 'root',  
+  password: '',  
+  database: 'loginbase',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0 // ini sesuaiin aja le
 });
 
-db.connect((err) => {
-  if (err) {
-    console.error('Database connection failed:', err.stack);
-    return;
-  }
-  console.log('Connected to the database.');
-});
-
-// Middleware cors - body-parser
+// Middleware cors - body parser
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//_________________________________________________________
-// Regis
-app.post('/register', (req, res) => {
+//___________________________________________________________________
+
+// Register new user
+app.post('/register', async (req, res) => {
   const { email, password } = req.body;
 
-// email check
-  db.query('SELECT * FROM akun WHERE email = ?', [email], (err, result) => {
-    if (err) {
-      return res.status(500).json({ message: 'Database error' });
-    }
+  try {
+    // Check if email already exists
+    const [rows] = await db.execute('SELECT * FROM akun WHERE email = ?', [email]);
 
-    if (result.length > 0) {
+    if (rows.length > 0) {
       return res.status(400).json({ message: 'Email already registered' });
     }
 
-// Hash password
-    bcrypt.hash(password, 10, (err, hashedPassword) => {
-      if (err) {
-        return res.status(500).json({ message: 'Error hashing password' });
-      }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-// Insert user into the database
-      db.query('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashedPassword], (err, result) => {
-        if (err) {
-          return res.status(500).json({ message: 'Error regis' });
-        }
-        return res.status(201).json({ message: 'regis success' });
-      });
-    });
-  });
+    const [result] = await db.execute('INSERT INTO akun (email, password) VALUES (?, ?)', [email, hashedPassword]);
+
+    return res.status(201).json({ message: 'User registered successfully', userId: result.insertId });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Error registering user' });
+  }
 });
 
-//____________________________________________________________________________________
+//_________________________________________________________________________________
 
-// Login 
-app.post('/login', (req, res) => {
+// Login user
+app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-// email check
-  db.query('SELECT * FROM akun WHERE email = ?', [email], (err, result) => {
-    if (err) {
-      return res.status(500).json({ message: 'Database error' });
-    }
+  try {
+    // Find user by email
+    const [rows] = await db.execute('SELECT * FROM akun WHERE email = ?', [email]);
 
-    if (result.length === 0) {
+    if (rows.length === 0) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-// password komparator
-    bcrypt.compare(password, result[0].password, (err, isMatch) => {
-      if (err) {
-        return res.status(500).json({ message: 'Error comparing passwords' });
-      }
+    const user = rows[0];
 
-      if (isMatch) {
-        return res.status(200).json({ message: 'Login successful' });
-      } else {
-        return res.status(400).json({ message: 'Invalid email or password' });
-      }
-    });
-  });
+    // Compare the entered password with the stored hash
+    const pwMatch = await bcrypt.compare(password, user.password);
+
+    if (pwMatch) {
+      return res.status(200).json({ message: 'Login successful' });
+    } else {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Error logging in user' });
+  }
 });
 
 // Start the server
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
