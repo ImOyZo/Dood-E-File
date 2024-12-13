@@ -5,14 +5,14 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const app = express();
 
-const db = mysql.createPool({
+const db = mysql.createPool({// ini sesuaiin aja le
   host: 'localhost',
-  user: 'root',  
-  password: '',  
+  user: 'atmin',  
+  password: '12345',  
   database: 'loginbase',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0 // ini sesuaiin aja le
+  queueLimit: 0 
 });
 
 // Middleware cors - body parser
@@ -61,7 +61,7 @@ app.post('/login', async (req, res) => {
 
     const user = rows[0];
 
-    // Compare the entered password with the stored hash
+// pw komparator (hashing)
     const pwMatch = await bcrypt.compare(password, user.password);
 
     if (pwMatch) {
@@ -75,7 +75,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Start the server
+// server runnin
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
