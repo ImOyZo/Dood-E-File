@@ -1,26 +1,33 @@
 const express = require('express');
-const {upload, handleFileUpload} = require('./uploadfile');
-const {handleFileDownload} = require('./downloadfile');
-const {handleFileList} = require('./listfile');
+const bodyParser = require('body-parser');
+const { upload, handleFileUpload } = require('./handler/uploadFile');
+const { handleFileDownload } = require('./handler/downloadFile');
+const { handleFileList } = require('./handler/listFile');
 const cors = require('cors');
 
 const app = express();
 
 let corsOption = {
-    origin : '*',
+    origin: '*',
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 };
-  
+
 app.use(cors(corsOption));
-  
-app.post('/upload', upload.single('file'), handleFileUpload);
+app.use(bodyParser.json());
 
-app.get('/files', cors(corsOption),handleFileList);
+// Use your db userID
+const hardcodedId = 2;
 
+app.get('/files', async (req, res) => {
+    await handleFileList(req, res, hardcodedId);
+});
 app.get('/download/:filename', async (req, res) => {
     const filename = req.params.filename;
-    await handleFileDownload (req, res, filename);
+    await handleFileDownload(req, res, filename, hardcodedId);
+});
+app.post('/upload', upload.single('file'), async (req, res) => {
+    await handleFileUpload (req, res, hardcodedId);
 });
 
 // Start the server

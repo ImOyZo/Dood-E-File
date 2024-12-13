@@ -1,13 +1,10 @@
-import mysql from "mysql2";
-
-import dotenv from "dotenv";
-dotenv.config()
+const mysql = require('mysql2');
 
 const pool = mysql.createPool({
-    host: process.env.MYSQL_HOST,
-    user: process.env.MYSQL_USERS,
-    password: process.env.MYSQL_PASSWORD,
-    database: process.env.MYSQL_DATABASE
+    host: 'localhost',
+    user: 'root',
+    password: 'doodefile69',
+    database: 'doode_file'
 }).promise()
 
 async function fetchFolders(ownerID) {
@@ -75,4 +72,11 @@ async function updateFolder(ownerID, oldFolderName, newFolderName, path) {
         console.error(error)
         return error
     }
+}
+
+module.exports = {
+    fetchFolder,
+    updateFolder,
+    deleteFolder,
+    createFolder
 }

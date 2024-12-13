@@ -63,18 +63,6 @@
   height: 100px;
 }
 
-<<<<<<< HEAD
-.card {
-  position: relative; /* Pastikan ikon akan diposisikan relatif terhadap card */
-}
-
-.card .more-options {
-  position: absolute; /* Ikon akan diposisikan absolut terhadap card */
-  bottom: 10px; /* Jarak dari bawah */
-  right: 10px; /* Jarak dari kanan */
-  cursor: pointer; /* Menambahkan pointer saat dihover */
-}
-=======
 body {
   background-color: #f8f9fa;
   font-family: Arial, sans-serif;
@@ -141,4 +129,3 @@ body {
   background-color: #f8f9fa96;
   color: black;
 }
->>>>>>> 7c1062c89db3a90808cf3c84ef7acec8eef820d5

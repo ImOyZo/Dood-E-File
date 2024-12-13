@@ -1,13 +1,10 @@
-import mysql from "mysql2";
-
-import dotenv from "dotenv";
-dotenv.config()
+const mysql = require('mysql2');
 
 const pool = mysql.createPool({
-    host: process.env.MYSQL_HOST,
-    user: process.env.MYSQL_USERS,
-    password: process.env.MYSQL_PASSWORD,
-    database: process.env.MYSQL_DATABASE
+    host: 'localhost',
+    user: 'root',
+    password: 'doodefile69',
+    database: 'doode_file'
 }).promise()
 
 async function fetchLogs(userID) {
@@ -60,4 +57,10 @@ async function deleteLog(logID) {
         console.error(error)
         return error
     }
+}
+
+module.exports = {
+    deleteLog, 
+    createLog, 
+    fetchLogAction,    
 }

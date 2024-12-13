@@ -1,11 +1,9 @@
-const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
-const path = require('path');
 const Client = require('ssh2-sftp-client');
-
-const username = 'SFTP-USERNAME';
-const password = 'SFTP-PASSWORD';
+require('dotenv').config();
+const { fetchUsersFromID } = require('../models/users');
+const { createFile } = require('../models/file');
 
 // Set up Multer for file upload with disk storage
 const upload = multer({
@@ -16,22 +14,31 @@ const upload = multer({
   }),
 });
 
-// Endpoint to handle file upload
-const handleFileUpload = async (req, res) => {
+// Handle for file upload
+const handleFileUpload = async (req, res, id) => {
+  const user = await fetchUsersFromID(id);
   const sftp = new Client();
   const tempPath = req.file.path;
-  const remotePath = `/home/${username}/${req.file.originalname}`;
+  const remotePath = `/home/${user.username}/${req.file.originalname}`;
 
   try {
     await sftp.connect({
-      host: 'localhost',
-      port: 22,
-      username: username,
-      password: password,
+      host: process.env.host,
+      port: process.env.port,
+      username: user.username,
+      password: user.password,
     });
 
     await sftp.put(tempPath, remotePath);
     console.log(`Uploaded ${req.file.originalname} to ${remotePath}`);
+
+    const fileName = req.file.originalname;
+    const fileSize = req.file.size;
+    const ownerID = id;
+    const path = remotePath;
+    const fileID = id + fileSize;
+
+    const result = await createFile(fileID, fileName, fileSize, ownerID, path);
 
     // Respond to client
     res.send('File uploaded successfully!');

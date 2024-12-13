@@ -1,23 +1,19 @@
-const express = require('express');
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
 const Client = require('ssh2-sftp-client');
+require('dotenv').config();
+const { fetchUsersFromID } = require('../models/users');
 
-const username = 'SFTP-USERNAME';
-const password = 'SFTP-PASSWORD';
-
-// Endpoint to download a file from the remote server
-const handleFileDownload = async (req, res, filename) => {
+// Handler to download a file from the remote server
+const handleFileDownload = async (req, res, filename, id) => {
+    const user = fetchUsersFromID(id);
     const sftp = new Client();
-    const remotePath = `/home/${username}/${filename}`;
+    const remotePath = `/home/${user.username}/${filename}`;
   
     try {
       await sftp.connect({
-        host: 'localhost',
-        port: 22,
-        username: username,
-        password: password,
+        host: process.env.host,
+        port: process.env.port,
+        username: user.username,
+        password: user.password,
       });
 
       const fileBuffer = await sftp.get(remotePath);

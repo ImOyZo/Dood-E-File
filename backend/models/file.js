@@ -1,13 +1,10 @@
-import mysql from "mysql2";
-
-import dotenv from "dotenv";
-dotenv.config()
+const mysql = require('mysql2');
 
 const pool = mysql.createPool({
-    host: process.env.MYSQL_HOST,
-    user: process.env.MYSQL_USERS,
-    password: process.env.MYSQL_PASSWORD,
-    database: process.env.MYSQL_DATABASE
+    host: 'localhost',
+    user: 'root',
+    password: 'doodefile69',
+    database: 'doode_file'
 }).promise()
 
 async function fetchFiles(ownerID) {
@@ -23,13 +20,13 @@ async function fetchFiles(ownerID) {
     }
 }
 
-async function fetchFile(ownerID, fileName) {
+async function fetchFile(ownerID, fileName, path) {
     try {
         const [result] = await pool.query(`
             SELECT *
             FROM file
-            WHERE ownerID = ? AND fileName = ?
-            `, [ownerID, fileName])
+            WHERE ownerID = ? AND fileName = ? AND path =?
+            `, [ownerID, fileName, path])
         return result[0]
     } catch (error) {
         console.error(error)
@@ -37,12 +34,11 @@ async function fetchFile(ownerID, fileName) {
     }
 }
 
-async function createFile(fileName, fileType, fileSize, ownerID, path) {
+async function createFile(fileID, fileName, fileSize, ownerID, path) {
     try {
         const [result] = await pool.query(`
-            INSERT INTO file (fileName, fileType, fileSize, ownerID, path)
-            VALUES (?, ?, ?, ?, ?)
-            `, [fileName, fileType, fileSize, ownerID, path])
+            INSERT INTO file (fileID, fileName, fileSize, ownerID, path) VALUES (?, ?, ?, ?,?)`
+            , [fileID, fileName, fileSize, ownerID, path])
         return fetchFile(ownerID, fileName)
     } catch (error) {
         console.error(error)
@@ -50,12 +46,12 @@ async function createFile(fileName, fileType, fileSize, ownerID, path) {
     }
 }
 
-async function deleteFile(ownerID, fileName) {
+async function deleteFile(ownerID, fileName, path) {
     try {
         const [result] = await pool.query(`
             DELETE FROM file
-            WHERE ownerID = ? AND fileName = ?
-            `, [ownerID, fileName])
+            WHERE ownerID = ? AND fileName = ? AND path = ?
+            `, [ownerID, fileName, path])
         return result
     } catch (error) {
         console.error(error)
@@ -75,4 +71,11 @@ async function updateFile(ownerID, oldFileName, newFileName, path) {
         console.error(error)
         return error
     }
+}
+
+module.exports = {
+    fetchFile,
+    updateFile,
+    deleteFile,
+    createFile
 }
