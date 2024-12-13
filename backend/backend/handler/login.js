@@ -16,7 +16,7 @@ const handleLogin = async (req, res,) => {
 
         res.status(200).json({
             message: 'Login successful',
-            userID: user.userID,
+            userID: user.userID
         });
     } catch(err){
         console.error('Error during login:', err.message);

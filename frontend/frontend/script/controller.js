@@ -103,39 +103,10 @@ async function renameFile() {
     }
 }
 
-async function login(){
-    const loginForm = document.getElementById('login-form').addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-
-        try {
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const result = await response.json();
-            if (response.ok) {
-                alert('Login successful!');
-                sessionStorage.setItem('User ID:', result.userID);
-                window.location.href = `/frontend2/pages/dashboard.html?userID=${result.userID}`;
-            } else {
-                alert(result.message);
-            }
-        } catch (err) {
-            console.error('Login error:', err.message);
-            alert('Something went wrong. Please try again.');
-        }
-    });
-
-}
 // Set Fetching File Dir
  // Start at the root directory
+
+
 window.onload = async () => {
 
     const userID = sessionStorage.getItem('userID');
@@ -152,7 +123,7 @@ window.onload = async () => {
     let currentPath = '/'; 
     try {
         // Fetch /files from the Backend
-        const response = await fetch(`/files?userID=${userID}?path=${encodeURIComponent(currentPath)}`, {
+        const response = await fetch(`/files?userID=${userID}&path=${encodeURIComponent(currentPath)}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'
@@ -247,5 +218,3 @@ function navigateToFolder(path){
 
 // Initial call to fetch files on page load
 //fetchFiles();
-
-login();
