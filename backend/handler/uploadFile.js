@@ -14,7 +14,7 @@ const upload = multer({
   }),
 });
 
-// Handle for file upload
+// Endpoint to handle file upload
 const handleFileUpload = async (req, res, id) => {
   const user = await fetchUsersFromID(id);
   const sftp = new Client();

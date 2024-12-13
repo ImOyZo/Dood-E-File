@@ -1,4 +1,9 @@
-// Used to communicate betwen client-side (web browser) and Server-side (backend and server)
+// Cookie 
+function getCookie(name){
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
 
 // Function to upload file to backend
 async function uploadFile() {
@@ -13,11 +18,24 @@ async function uploadFile() {
     const formData = new FormData();
     formData.append('file', file);
 
+    const userID = getCookie('userID');
+
+    if (!userID) {
+        //alert('You must log in first!');
+        window.location.href = '/frontend2/pages/login.html'; // Redirect to login if no userID found
+        return;
+    }
+
+
     try {
         // Fetch /upload  
         const response = await fetch('/upload', {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                'user-id': userID
+            },
+            credentials: 'include   '
         });
 
         if (response.ok) {
@@ -37,8 +55,22 @@ async function uploadFile() {
 
 // Download File Function
 async function downloadFile(filename) {
+    const userID = getCookie('userID');
+
+    if (!userID) {
+        //alert('You must log in first!');
+        window.location.href = '/frontend2/pages/login.html'; // Redirect to login if no userID found
+        return;
+    }
+
     try {
-        const response = await fetch(`/download/${filename}`);
+        const response = await fetch(`/download/${filename}`, {
+            method: 'GET',
+            headers: {
+                'user-id': userID
+            },
+            credentials: 'include'
+        });
 
         if (response.ok) {
             const blob = await response.blob();
@@ -103,14 +135,8 @@ async function renameFile() {
     }
 }
 
-function getCookie(name){
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-}
-
 // Set Fetching File Dir
- // Start at the root directory
+// Start at the root directory
 let currentPath = '/'; 
 async function fetchFiles(){
 

@@ -69,7 +69,7 @@ async function openRenameModal(filename) {
     const renameModal = new bootstrap.Modal(document.getElementById('renameModal'));
     renameModal.show();
 }
-
+// Broken
 async function renameFile() {
     const newName = document.getElementById('newFileName').value;
     const oldFilePath = document.getElementById('oldFilePath').value;
@@ -103,18 +103,27 @@ async function renameFile() {
     }
 }
 
-
-
-
 // Set Fetching File Dir
-let currentPath = '/';  // Start at the root directory
-async function fetchFiles() {
+ // Start at the root directory
+
+
+window.onload = async () => {
+
+    const userID = sessionStorage.getItem('userID');
+
+    if (!userID) {
+        //alert('You must log in first!');
+        window.location.href = '/frontend2/pages/login.html'; // Redirect to login if no userID found
+        return;
+    }
+
     const container = document.getElementById("fileContainer");
     const pathDisplay = document.getElementById("current-path");
 
+    let currentPath = '/'; 
     try {
         // Fetch /files from the Backend
-        const response = await fetch(`/files?path=${encodeURIComponent(currentPath)}`, {
+        const response = await fetch(`/files?userID=${userID}&path=${encodeURIComponent(currentPath)}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json'
@@ -208,4 +217,4 @@ function navigateToFolder(path){
 }
 
 // Initial call to fetch files on page load
-fetchFiles();
+//fetchFiles();

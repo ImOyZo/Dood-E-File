@@ -1,5 +1,3 @@
-// RENAME FILE STILL NOT WORKING DO NOT USE IT
-
 const Client = require('ssh2-sftp-client');
 const path = require('path');
 require('dotenv').config();

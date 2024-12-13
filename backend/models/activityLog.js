@@ -62,5 +62,6 @@ async function deleteLog(logID) {
 module.exports = {
     deleteLog, 
     createLog, 
-    fetchLogAction,    
+    fetchLogAction,
+    
 }

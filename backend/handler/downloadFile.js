@@ -2,9 +2,9 @@ const Client = require('ssh2-sftp-client');
 require('dotenv').config();
 const { fetchUsersFromID } = require('../models/users');
 
-// Handler to download a file from the remote server
+// Endpoint to download a file from the remote server
 const handleFileDownload = async (req, res, filename, id) => {
-    const user = fetchUsersFromID(id);
+    const user = await fetchUsersFromID(id);
     const sftp = new Client();
     const remotePath = `/home/${user.username}/${filename}`;
   

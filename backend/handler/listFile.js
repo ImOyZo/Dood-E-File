@@ -3,15 +3,23 @@ const Client = require('ssh2-sftp-client');
 const { fetchUsersFromID } = require('../models/users');
 require('dotenv').config();
 
-// Handler to list files from the remote server
+// Endpoint to list files from the remote server
 const handleFileList = async (req, res, id) => {
     // Fetch user based on the hardcoded id
     const user = await fetchUsersFromID(id);
+
+    if (!user) {
+      console.error('User not found for ID:', id);
+      return res.status(404).send('User not found');
+    }
+
+    console.log('User fetched:', user); 
+
     const sftp = new Client();
     const baseDir = `/home/${user.username}/`; // Remote directory to list files
     let remoteDir = req.query.path || '';
 
-    remoteDir = remoteDir.replace(/\/+$/, '');  // Fix Duplicated Folder
+    remoteDir = remoteDir.replace(/\/+$/, '');  // Remove trailing slashes
     console.log('Sanitized path:', remoteDir);  // For debugging
 
     if (remoteDir.includes('..')) {

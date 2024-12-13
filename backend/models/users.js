@@ -17,6 +17,16 @@ async function fetchUsers() {
     }
 }
 
+async function fetchUserFromEmail(email) {
+    try {
+        const [result] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
+        return result[0]; 
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
 async function fetchUsersFromID(id) {
     try {
         const [result] = await pool.query(`
@@ -73,6 +83,8 @@ async function updateUser(id, username, email, password, role, usedStorage) {
 }
 
 module.exports = {
+    fetchUsers,
+    fetchUserFromEmail,
     fetchUsersFromID,
     updateUser,
     deleteUser,
