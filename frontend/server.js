@@ -1,63 +1,96 @@
-const mysql = require('mysql');
 const express = require('express');
-const session = require('express-session');
-const path = require('path');
-
-const connection = mysql.createConnection({
-	host     : 'localhost',
-	user     : 'root',
-	password : '',
-	database : 'loginbase'
-});
-
+const mysql = require('mysql2');
+const bcrypt = require('bcryptjs');
+const bodyParser = require('body-parser');
+const cors = require('cors');
 const app = express();
 
-app.use(session({
-	secret: 'secret',
-	resave: true,
-	saveUninitialized: true
-}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'static')));
-
-// http://localhost:3000/login
-app.get('/login', function(request, response) {
-	response.sendFile(path.join(__dirname + 'dir login nya (login.html)'));
+//db connection
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root', 
+  password: '', 
+  database: 'loginbase' //ni sesuaiin aja ma db nanti
 });
 
-// http://localhost:3000/auth
-app.post('/auth', function(request, response) {
-	let username = request.body.username;
-	let password = request.body.password;
-	if (username && password) {
-		connection.query('SELECT * FROM akun WHERE username = ? AND password = ?', [username, password], function(error, results, fields) {
-			if (error) throw error;
-
-			if (results.length > 0) {
-				request.session.loggedin = true;
-				request.session.username = username;
-				response.redirect('home dir');
-			} else {
-				response.send('Incorrect Username and/or Password!');
-                response.redirect('dir login');
-			}			
-			response.end();
-		});
-	} else {
-		response.send('Please enter Username and Password!');
-		response.end();
-	}
+db.connect((err) => {
+  if (err) {
+    console.error('Database connection failed:', err.stack);
+    return;
+  }
+  console.log('Connected to the database.');
 });
 
-// http://localhost:3000/home
-app.get('/C:/Users/LENOVO/OneDrive/Documents/!Perkuli-ahan/SEMESTER 3/RPL/express/home.html', function(request, response) {
-	if (request.session.loggedin) {
-		response.send('identify, ' + request.session.username + '!');
-	} else {
-		response.send('not loggin in');
-	}
-	response.end();
+// Middleware cors - body-parser
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+//_________________________________________________________
+// Regis
+app.post('/register', (req, res) => {
+  const { email, password } = req.body;
+
+// email check
+  db.query('SELECT * FROM akun WHERE email = ?', [email], (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Database error' });
+    }
+
+    if (result.length > 0) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+
+// Hash password
+    bcrypt.hash(password, 10, (err, hashedPassword) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error hashing password' });
+      }
+
+// Insert user into the database
+      db.query('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashedPassword], (err, result) => {
+        if (err) {
+          return res.status(500).json({ message: 'Error regis' });
+        }
+        return res.status(201).json({ message: 'regis success' });
+      });
+    });
+  });
 });
 
-app.listen(3000);
+//____________________________________________________________________________________
+
+// Login 
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+// email check
+  db.query('SELECT * FROM akun WHERE email = ?', [email], (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Database error' });
+    }
+
+    if (result.length === 0) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+// password komparator
+    bcrypt.compare(password, result[0].password, (err, isMatch) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error comparing passwords' });
+      }
+
+      if (isMatch) {
+        return res.status(200).json({ message: 'Login successful' });
+      } else {
+        return res.status(400).json({ message: 'Invalid email or password' });
+      }
+    });
+  });
+});
+
+// Start the server
+const PORT = 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
