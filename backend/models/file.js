@@ -91,5 +91,6 @@ module.exports = {
     fetchFile,
     updateFile,
     deleteFile,
-    createFile
+    createFile,
+    fetchStarred
 }
