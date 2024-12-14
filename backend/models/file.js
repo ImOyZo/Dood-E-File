@@ -34,6 +34,20 @@ async function fetchFile(ownerID, fileName, path) {
     }
 }
 
+async function fetchStarred(ownerID) {
+    try {
+        const [result] = await pool.query(`
+            SELECT *
+            FROM file
+            WHERE ownerid = ? AND starred = TRUE
+            `, [ownerID])
+        return result[0]
+    } catch (error) {
+        console.error(error)
+        return error
+    }
+}
+
 async function createFile(fileID, fileName, fileSize, ownerID, path) {
     try {
         const [result] = await pool.query(`
