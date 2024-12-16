@@ -1,0 +1,41 @@
+/* General Body Styling */
+body {
+    background-color: #f4f6f9;
+    font-family: Arial, sans-serif;
+  }
+  .navbar {
+    background-color: #4A4AFE !important;
+  }
+  
+  /* Card Header Styling */
+  .card-header {
+    background-color: #4A4AFE !important;
+    color: #ffffff;
+  }
+  
+  /* Card Styling */
+  .card {
+    max-width: 600px;
+    margin: 0 auto;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  /* Form Input Styling */
+  .form-control {
+    border-radius: 5px;
+  }
+  
+  /* Read-only Input Styling */
+  input[readonly] {
+    background-color: #e9ecef;
+    color: #495057;
+    cursor: not-allowed;
+  }
+  
+  /* Submit Button */
+  .btn-primary {
+    padding: 8px 20px;
+    font-size: 1rem;
+  }
+  
