@@ -1,18 +1,19 @@
-// Cookie (Authentication)
+// Cookie 
 function getCookie(name){
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
 }
 
-// Delete file from user workspace (added trash soon)
 async function deleteFile(filename) {
     const userID = getCookie('userID');
 
     if (!userID) {
+        // Redirect to login if no userID found
         window.location.href = '/frontend2/pages/login.html';
         return;
     }
+
     try {
         const response = await fetch(`/delete/${filename}`, {
             method: 'DELETE',
@@ -21,9 +22,10 @@ async function deleteFile(filename) {
             },
             credentials: 'include'
         });
+
         if (response.ok) {
             alert(`File "${filename}" has been deleted successfully.`);
-            // Refresh file list after deletion
+            // Optionally refresh the file list
             fetchFiles();
         } else {
             const errorMsg = await response.text();
@@ -36,7 +38,7 @@ async function deleteFile(filename) {
 }
 
 
-// Upload file to user dashboard
+// Function to upload file to backend
 async function uploadFile() {
     const fileInput = document.getElementById('file-upload');
     const file = fileInput.files[0];
@@ -46,17 +48,20 @@ async function uploadFile() {
         return;
     }
 
-    // Append the uploaded file
     const formData = new FormData();
     formData.append('file', file);
 
     const userID = getCookie('userID');
+
     if (!userID) {
-        window.location.href = '/frontend2/pages/login.html'; 
+        //alert('You must log in first!');
+        window.location.href = '/frontend2/pages/login.html'; // Redirect to login if no userID found
         return;
     }
+
+
     try {
-        // Send teh appended file to /upload routes
+        // Fetch /upload  
         const response = await fetch('/upload', {
             method: 'POST',
             body: formData,
@@ -68,7 +73,7 @@ async function uploadFile() {
 
         if (response.ok) {
             alert('File uploaded successfully!');
-            // Refresh list in dashboard after success upload
+            // Refresh the file list after successful upload
             if (typeof fetchFiles === 'function') {
                 fetchFiles();
             }
@@ -123,7 +128,6 @@ async function downloadFile(filename) {
     }
 }
 
-// Open modal for renaming file
 async function openRenameModal(filePath) {
     document.getElementById('oldFilePath').value = filePath;
     document.getElementById('newFileName').value = '';
@@ -131,8 +135,7 @@ async function openRenameModal(filePath) {
     const renameModal = new bootstrap.Modal(document.getElementById('renameModal'));
     renameModal.show();
 }
-
-// Renaming File/Folder function (Broken)
+// Broken
 async function renameFile() {
     const userID = getCookie('userID')
     const newName = document.getElementById('newFileName').value;
@@ -174,7 +177,6 @@ async function renameFile() {
 // Set Fetching File Dir
 // Start at the root directory
 let currentPath = '/'; 
-// Function for fetching file in dashboard
 async function fetchFiles(){
 
     const userID = getCookie('userID');
@@ -239,10 +241,10 @@ async function fetchFiles(){
                             <p class="text-muted small">${file.size ? file.size + ' KB' : ''}</p>
 
                             <div class="dropdown position-absolute bottom-0 end-0 p-2">
-                                <button class="btn btn-link text-dark" type="button" onclick="event.stopPropagation()" id="dropdownMenuButton${file.name}" data-bs-toggle="dropdown" aria-expanded="false">
+                                <button class="btn btn-link text-dark" type="button" id="dropdownMenuButton${file.name}" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i data-feather="more-vertical"></i>
                                 </button>
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton${file.name}" onclick="event.stopPropagation()">
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton${file.name}">
                                     <li><a class="dropdown-item" onclick="downloadFile('${file.name}')">Download</a></li>
                                     <li><a class="dropdown-item" onclick="openRenameModal('${file.name}')">Rename</a></li>
                                     <li><a class="dropdown-item" onclick="share('${file.name}')">Share</a></li>
@@ -280,11 +282,10 @@ function handleFileClick(name, isDirectory) {
     }
 }
 
-// Function to help navigate inside folder
 function navigateToFolder(path){
     currentPath = path;
     fetchFiles();
 }
 
-// Call fetchFile() on load
+// Initial call to fetch files on page load
 fetchFiles();

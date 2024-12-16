@@ -41,12 +41,27 @@ async function fetchUsersFromID(id) {
     }
 }
 
-async function createUser(username, email, password, role) {
+async function fetchUserAdmin(id) {
+    try {
+        const [result] = await pool.query(`
+            SELECT *
+            FROM users 
+            WHERE userID = ? AND role = admin
+            `, [userID])
+            return [0]
+        } catch(err) {
+            console.log (err)
+            return err
+        }
+    
+}
+
+async function createUser(username, email, fullName, password, role) {
     try {
         const [result] = await pool.query(`
             INSERT INTO users (username, email, password, role)
-            VALUES (?, ?, ?, ?)
-            `, [username, email, password, role])
+            VALUES (?, ?, ?, ?, ?)
+            `, [username, email, fullName, password, role])
         const id = result.insertId
         return fetchUsersFromID(id)
     } catch (error) {
@@ -59,7 +74,7 @@ async function deleteUser(id) {
     try {
         const [result] = await pool.query(`
             DELETE FROM users
-            WHERE userID = ?
+            WHERE userID = ? 
             `, [id])
         return result
     } catch (error) {
@@ -88,5 +103,6 @@ module.exports = {
     fetchUsersFromID,
     updateUser,
     deleteUser,
-    createUser
+    createUser,
+    fetchUserAdmin,
 };

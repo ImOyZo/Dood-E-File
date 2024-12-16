@@ -4,8 +4,8 @@ const { fetchUsersFromID } = require('../models/users');
 require('dotenv').config();
 
 // Endpoint to list files from the remote server
-const handleFileList = async (req, res, id) => {
-    // Fetch user based on the id in DB
+const sortFileName = async (req, res, id) => {
+    // Fetch user based on the hardcoded id
     const user = await fetchUsersFromID(id);
 
     if (!user) {
@@ -58,5 +58,5 @@ const handleFileList = async (req, res, id) => {
 };
 
 module.exports = {
-    handleFileList,
+    sortFileName,
 };

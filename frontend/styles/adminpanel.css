@@ -81,6 +81,16 @@ h1, h2 {
     text-align: left;
 }
 
+.role {
+    margin-top: 20px;
+    text-align: justify;
+    width: 30%;
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #6791df;
+    border: 1px solid #4e4c4c;
+    border-radius: 5px;
+}
 .add-user input {
     width: 100%;
     padding: 10px;

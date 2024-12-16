@@ -129,3 +129,13 @@ body {
   background-color: #f8f9fa96;
   color: black;
 }
+
+.file-card {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}

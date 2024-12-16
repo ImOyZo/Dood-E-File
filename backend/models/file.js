@@ -34,6 +34,20 @@ async function fetchFile(ownerID, fileName, path) {
     }
 }
 
+async function fetchFilePath(path) {
+    try {
+        const [result] = await pool.query(`
+            SELECT * 
+            FROM file
+            WHERE path = ?
+            `, [path])
+        return result[0]
+    } catch (err){
+        console.err(err)
+        return(err)
+    }
+}
+
 async function fetchStarred(ownerID) {
     try {
         const [result] = await pool.query(`
@@ -92,5 +106,6 @@ module.exports = {
     updateFile,
     deleteFile,
     createFile,
-    fetchStarred
+    fetchStarred,
+    fetchFilePath
 }
