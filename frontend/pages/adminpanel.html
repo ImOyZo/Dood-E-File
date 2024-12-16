@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="../styles/adminpanel.css">
+</head>
+<body>
+    <div class="container">
+        <h1>DOODEFILE</h1>
+        <h2>User Management</h2>
+        
+        <!-- User Management Table -->
+        <div class="user-table">
+            <div class="table-header">
+                <div>Username</div>
+                <div>Full Name</div>
+                <div>Groups</div>
+                <div>Quota</div>
+                <div>Actions</div>
+            </div>
+            <div class="table-row">
+                <div>admin</div>
+                <div>Admin</div>
+                <div>admin</div>
+                <div>Default</div>
+                <div>
+                    <button class="btn">Edit</button>
+                    <button class="btn delete">Delete</button>
+                </div>
+            </div>
+            <div class="table-row">
+                <div>layla</div>
+                <div>Layla</div>
+                <div>users, artists</div>
+                <div>10 GB</div>
+                <div>
+                    <button class="btn">Edit</button>
+                    <button class="btn delete">Delete</button>
+                </div>
+            </div>
+            <div class="table-row">
+                <div>molly</div>
+                <div>Molly</div>
+                <div>users</div>
+                <div>Default</div>
+                <div>
+                    <button class="btn">Edit</button>
+                    <button class="btn delete">Delete</button>
+                </div>
+            </div>
+            <div class="table-row">
+                <div>ritasue</div>
+                <div>Ritasue</div>
+                <div>artists</div>
+                <div>10 GB</div>
+                <div>
+                    <button class="btn">Edit</button>
+                    <button class="btn delete">Delete</button>
+                </div>
+            </div>
+            <div class="table-row">
+                <div>stashcat</div>
+                <div>Stashcat</div>
+                <div>users, admin</div>
+                <div>5 GB</div>
+                <div>
+                    <button class="btn">Edit</button>
+                    <button class="btn delete">Delete</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add New User -->
+        <div class="add-user">
+            <h3>Create New User</h3>
+            <input type="text" placeholder="Username">
+            <input type="text" placeholder="Full Name">
+            <input type="text" placeholder="Groups">
+            <input type="text" placeholder="Quota">
+            <button class="btn add">Add User</button>
+        </div>
+    </div>
+</body>
+</html>
