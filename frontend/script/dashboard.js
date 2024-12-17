@@ -286,5 +286,60 @@ function navigateToFolder(path){
     fetchFiles();
 }
 
+// Fetch user logs and populate the notification dropdown
+async function fetchUserLogs() {
+    const loginID = getCookie('loginID'); // Get user loginID from cookies
+
+    if (!loginID) {
+        window.location.href = '/frontend2/pages/login.html'; // Redirect to login if not logged in
+        return;
+    }
+
+    try {
+        // Fetch logs for the user from the backend
+        const response = await fetch(`/user/logs?userID=${loginID}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'user-id': loginID
+            },
+            credentials: 'include'
+        });
+
+        const logsDropdown = document.getElementById('notificationDropdown');
+        if (!response.ok) {
+            logsDropdown.innerHTML = '<li class="dropdown-header">Error</li><li><p class="text-danger small">Failed to fetch logs</p></li>';
+            return;
+        }
+
+        const logs = await response.json();
+
+        // Clear the existing dropdown content
+        logsDropdown.innerHTML = `<li class="dropdown-header">Notifications</li>`;
+        if (logs.length === 0) {
+            logsDropdown.innerHTML += `<li><p class="text-muted small px-2">No notifications</p></li>`;
+        } else {
+            // Populate dropdown with logs
+            logs.forEach(log => {
+                logsDropdown.innerHTML += `
+                    <li>
+                        <a href="#" class="dropdown-item">
+                            <p class="small mb-0 text-truncate">${log.activity}</p>
+                            <small class="text-muted">${new Date(log.timestamp).toLocaleString()}</small>
+                        </a>
+                    </li>`;
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching logs:', error);
+        const logsDropdown = document.getElementById('notificationDropdown');
+        logsDropdown.innerHTML = '<li><p class="text-danger small">Failed to fetch logs</p></li>';
+    }
+}
+
+// Trigger fetchUserLogs when the notification dropdown is clicked
+document.getElementById('bell').addEventListener('click', fetchUserLogs);
+
+
 // Call fetchFile() on load
 fetchFiles();

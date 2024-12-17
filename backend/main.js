@@ -113,6 +113,23 @@ app.put('/user/edit/:userID', async (req, res) => {
     handleEditUser(req, res, userID, username, fullName, email, password, role);
 })
 
+// Send request for log notification
+app.get('/user/logs', async (req, res) => {
+    const userID = req.query.userID;
+
+    if (!userID) {
+        return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    try {
+        const logs = await fetchLogs(userID); 
+        res.status(200).json(logs); 
+    } catch (error) {
+        console.error('Error fetching logs:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 // Start the server
 app.listen(3000, () => {
     console.log('Server is running on port 3000');

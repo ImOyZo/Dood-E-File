@@ -28,9 +28,15 @@
           <span class="input-group-text"><i data-feather="search"></i></span>
         </div>
         <div class="navbar-extra d-flex align-items-center">
-          <a href="#" id="bell" class="me-3">
-            <i data-feather="bell"></i>
-          </a>
+          <div class="dropdown">
+            <a href="#" id="bell" class="me-3" data-bs-toggle="dropdown" aria-expanded="false">
+              <i data-feather="bell"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end p-2" id="notificationDropdown" aria-labelledby="bell">
+              <li class="dropdown-header">Notifications</li>
+              <li><p class="text-muted small">Loading...</p></li>
+            </ul>
+          </div>
           <a href="#" id="settings" class="me-3">
             <i data-feather="settings"></i>
           </a>
