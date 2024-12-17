@@ -18,7 +18,7 @@ async function login(){
             const result = await response.json();
             if (response.ok) {
                 alert('Login successful!');
-                document.cookie = `userID=${result.userID}; path=/; max-age=3600`;
+                document.cookie = `loginID=${result.userID}; path=/; max-age=3600`;
                 window.location.href = `/frontend2/pages/dashboard.html?userID=${result.userID}`;
                 
             } else {

@@ -7,9 +7,9 @@ function getCookie(name){
 
 // Delete file from user workspace (added trash soon)
 async function deleteFile(filename) {
-    const userID = getCookie('userID');
+    const loginID = getCookie('loginID');
 
-    if (!userID) {
+    if (!loginID) {
         window.location.href = '/frontend2/pages/login.html';
         return;
     }
@@ -17,7 +17,7 @@ async function deleteFile(filename) {
         const response = await fetch(`/delete/${filename}`, {
             method: 'DELETE',
             headers: {
-                'user-id': userID
+                'user-id': loginID
             },
             credentials: 'include'
         });
@@ -50,8 +50,8 @@ async function uploadFile() {
     const formData = new FormData();
     formData.append('file', file);
 
-    const userID = getCookie('userID');
-    if (!userID) {
+    const loginID = getCookie('loginID');
+    if (!loginID) {
         window.location.href = '/frontend2/pages/login.html'; 
         return;
     }
@@ -61,7 +61,7 @@ async function uploadFile() {
             method: 'POST',
             body: formData,
             headers: {
-                'user-id': userID
+                'user-id': loginID
             },
             credentials: 'include'
         });
@@ -83,9 +83,9 @@ async function uploadFile() {
 
 // Download File Function
 async function downloadFile(filename) {
-    const userID = getCookie('userID');
+    const loginID = getCookie('loginID');
 
-    if (!userID) {
+    if (!loginID) {
         //alert('You must log in first!');
         window.location.href = '/frontend2/pages/login.html'; // Redirect to login if no userID found
         return;
@@ -95,7 +95,7 @@ async function downloadFile(filename) {
         const response = await fetch(`/download/${filename}`, {
             method: 'GET',
             headers: {
-                'user-id': userID
+                'user-id': loginID
             },
             credentials: 'include'
         });
@@ -134,7 +134,7 @@ async function openRenameModal(filePath) {
 
 // Renaming File/Folder function (Broken)
 async function renameFile() {
-    const userID = getCookie('userID')
+    const loginID = getCookie('loginID')
     const newName = document.getElementById('newFileName').value;
     const oldFilePath = document.getElementById('oldFilePath').value;
 
@@ -177,9 +177,9 @@ let currentPath = '/';
 // Function for fetching file in dashboard
 async function fetchFiles(){
 
-    const userID = getCookie('userID');
+    const loginID = getCookie('loginID');
 
-    if (!userID) {
+    if (!loginID) {
         //alert('You must log in first!');
         window.location.href = '/frontend2/pages/login.html'; // Redirect to login if no userID found
         return;
@@ -190,11 +190,11 @@ async function fetchFiles(){
 
     try {
         // Fetch /files from the Backend
-        const response = await fetch(`/files?userID=${userID}&path=${encodeURIComponent(currentPath)}`, {
+        const response = await fetch(`/files?loginID=${loginID}&path=${encodeURIComponent(currentPath)}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
-                'user-id': userID
+                'user-id': loginID
             },
             credentials: 'include'
         });

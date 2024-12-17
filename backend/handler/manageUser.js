@@ -1,115 +1,186 @@
-// WIP
-const Client = requre('ssh2');
+//===========================================================================================\\
+// PLEASE HANDLE THIS CODE CAREFULLY AS REQUEST / COMMAND CAN BE DIRECTLY SENT TO MAIN SERVER \\   
+//===========================================================================================\\
+
+const { exec } = require('child_process');
 const { fetchUsersFromID, fetchUserAdmin, fetchUsers, createUser, deleteUser, updateUser } = require('../models/users');
 
-const ssh = new Client();
+// Create Linux User
+function createLinuxUser(username, password, callback) {
+    // Create the user
+    exec(`sudo useradd -m ${username}`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error creating user: ${error.message}`);
+            return callback(error, null);
+        }
+        if (stderr) {
+            console.error(`stderr: ${stderr}`);
+            return callback(stderr, null);
+        }
+        console.log(`User ${username} created successfully.`);
 
-// Run SSH command;
-function runSSHCommand(command) {
-    return new Promise((resolve, reject) => {
-        ssh.on('ready', () => {
-            ssh.exec(command, (err, stream) => {
-                if (err) {
-                    reject(err);
-                }
-                let output = '';
-                stream.on('data', (data) => {
-                    output += data.toString();
-                }).on('close', (code, signal) => {
-                    ssh.end();
-                    resolve(output);
-                });
-            });
-        }).connect({
-            host: 'localhost',  
-            port: 22,  
-            username: 'root',  
-            privateKey: 'doodefile69'  
+        // Set password for the user
+        exec(`echo "${username}:${password}" | sudo chpasswd`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error setting password: ${error.message}`);
+                return callback(error, null);
+            }
+            if (stderr) {
+                console.error(`stderr: ${stderr}`);
+                return callback(stderr, null);
+            }
+            console.log(`Password for ${username} set successfully.`);
+            callback(null, stdout);
         });
     });
 }
 
-// Handle Linux and DB user Deletion;
+// Edit Linux User and Password
+function editLinuxUser(oldUsername, newUsername, password, callback) {
+    // Change username
+    exec(`sudo usermod -l ${newUsername} ${oldUsername}`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error editing user: ${error.message}`);
+            return callback(error, null);
+        }
+        if (stderr) {
+            console.error(`stderr: ${stderr}`);
+            return callback(stderr, null);
+        }
+        console.log(`Username changed from ${oldUsername} to ${newUsername} successfully.`);
+
+        // Set new password
+        exec(`echo "${newUsername}:${password}" | sudo chpasswd`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error setting new password: ${error.message}`);
+                return callback(error, null);
+            }
+            if (stderr) {
+                console.error(`stderr: ${stderr}`);
+                return callback(stderr, null);
+            }
+            console.log(`Password for ${newUsername} set successfully.`);
+            callback(null, stdout);
+        });
+    });
+}
+
+// Delete Linux User
+function deleteLinuxUser(username, callback) {
+    exec(`sudo userdel -r ${username}`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error deleting user: ${error.message}`);
+            return callback(error, null);
+        }
+        if (stderr) {
+            console.error(`stderr: ${stderr}`);
+            return callback(stderr, null);
+        }
+        console.log(`User ${username} deleted successfully.`);
+        callback(null, stdout);
+    });
+}
+
+// Handle Linux and DB user Deletion
 const handleDeleteUser = async (req, res, userID) => {
     try {
         const user = await fetchUsersFromID(userID);
 
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
 
-        // Run SSH command to delete Linux user
-        const linuxDeletionResult = await runSSHCommand(`sudo userdel -r ${user.username}`);
+        // Delete user from the Linux system
+        deleteLinuxUser(user.username, (error, result) => {
+            if (error) {
+                return res.status(500).json({ success: false, message: 'Failed to delete user from Linux system' });
+            }
 
-        if (linuxDeletionResult) {
             // Proceed to delete the user from the database
-            await deleteUser(userID);  // 
+            deleteUser(userID);  
             res.json({ success: true });
-        } else {
-            res.status(500).json({ success: false, message: 'Failed to delete user from Linux system' });
-        }
+        });
     } catch (error) {
         console.error('Error deleting user:', error);
         res.status(500).json({ success: false, message: 'Failed to delete user' });
     }
 };
 
-// Handle Linux and DB user creation ;
-const handleAddUser = async (req, res ) => {
+// Handle Linux and DB user creation
+const handleAddUser = async (req, res, username, fullName, email, password, role) => {
     try {
-        const userAddCommand = `sudo useradd -m ${username}`;
-        const linuxUserCreation = await runSSHCommand(userAddCommand);
-
-        if(linuxUserCreation){
-            const passwordCommand = `echo ${username}:${password} | chpasswd`;
-            const passwordSet = await runSSHCommand(passwordCommand);
-
-            if(passwordSet){
-                const newUserDB = await createUser(username, email, fullName, password, role);
-                return res.json({ success: true, newUserDB});
-            } else{
-                return res.status(500).json({success: false, message: 'Failed to set user password'});
+        createLinuxUser(username, password, (error, result) => {
+            if (error) {
+                console.log('Error creating Linux user:', error);
+                return res.status(500).json({ success: false, message: 'Failed to create Linux user' });
             }
-        } else {
-            return res.status(500).json({success: false, message:'Failed to create user'});
-        }
+            console.log('Linux user created and password set successfully!');
+        });
+
+        const newUserDB = await createUser(username, email, fullName, password, role);
+        return res.json({ success: true, newUserDB });
     } catch (error) {
-        console.error('Error adding user:', error);
-        res.status(500).json({ success: false, message: 'Failed to add user' });
+        console.error('Error creating user:', error);
+        res.status(500).json({ success: false, message: 'Failed to create user in the database' });
     }
-}
+};
 
-// Handle Linux and DB user edit;
+// Handle Linux and DB user edit
 const handleEditUser = async (req, res, userID, username, fullName, email, password, role) => {
-
     try {
         const user = await fetchUsersFromID(userID);
-    
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
-    
-        // SSH command to change linux Username and Password
-        const editUserCommand = `sudo usermod -l ${username} ${user.username} && echo ${username}:${password} | chpasswd`;
-        await runSSHCommand(editUserCommand);
-    
+
+        editLinuxUser(user.username, username, password, (error, result) => {
+            if (error) {
+                console.log('Error editing Linux user:', error);
+                return res.status(500).json({ success: false, message: 'Failed to edit Linux user' });
+            }
+            console.log('Linux user edited successfully!');
+        });
+
         // Update user in the database
         const updatedUserDB = await updateUser(userID, username, email, fullName, password, role);
         res.json({ success: true, updatedUserDB });
     } catch (error) {
         console.error('Error editing user:', error);
-        res.status(500).json({ success: false, message: 'Failed to edit user' });
+        res.status(500).json({ success: false, message: 'Failed to edit user in the database' });
     }
-}
+};
 
-const handleFetchUser = async (req, res,) => {
-    fetchUsers();
-}
+// Fetch user data by ID
+const handleFetchUserData = async (req, res, userID) => {
+    try {
+        const user = await fetchUsersFromID(userID);
+        if (user) {
+            res.json({ success: true, user });
+        } else {
+            res.status(404).json({ success: false, message: 'User not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch user data' });
+    }
+};
 
+// Fetch all users
+const handleFetchUser = async (req, res) => {
+    try {
+        const users = await fetchUsers();
+        if (users) {
+            res.json(users);
+        } else {
+            res.status(404).json({ success: false, message: 'No users found' });
+        }
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch users' });
+    }
+};
 
 module.exports = {
     handleFetchUser,
+    handleFetchUserData,
     handleDeleteUser,
     handleAddUser,
-    handleEditUser
+    handleEditUser,
 };

@@ -12,71 +12,22 @@
         <h2>User Management</h2>
 
         <div class="user-table">
-            <div class="table-header">
-                <div>Username</div>
-                <div>Full Name</div>
-                <div>Role</div>
-            </div>
-            <div class="table-row">
-                <div>admin</div>
-                <div>Admin</div>
-                <div>admin</div>
-                <div>
-                    <button class="btn">Edit</button>
-                    <button class="btn delete">Delete</button>
-                </div>
-            </div>
-            <div class="table-row">
-                <div>layla</div>
-                <div>Layla</div>
-                <div>users, artists</div>
-                <div>
-                    <button class="btn">Edit</button>
-                    <button class="btn delete">Delete</button>
-                </div>
-            </div>
-            <div class="table-row">
-                <div>molly</div>
-                <div>Molly</div>
-                <div>users</div>
-                <div>
-                    <button class="btn">Edit</button>
-                    <button class="btn delete">Delete</button>
-                </div>
-            </div>
-            <div class="table-row">
-                <div>ritasue</div>
-                <div>Ritasue</div>
-                <div>artists</div>
-                <div>
-                    <button class="btn">Edit</button>
-                    <button class="btn delete">Delete</button>
-                </div>
-            </div>
-            <div class="table-row">
-                <div>stashcat</div>
-                <div>Stashcat</div>
-                <div>users, admin</div>
-                <div>
-                    <button class="btn">Edit</button>
-                    <button class="btn delete">Delete</button>
-                </div>
-            </div>
+            <!-- Injecting Dynamic HTML from adminPanel.js-->
         </div>
         
 
-        <div class="add-user">
+        <form class="add-user">
             <h3>Create New User</h3>
-            <input id="username" type="text" placeholder="Username">
-            <input id="email" type="email" placeholder="Email">
-            <input id="fullName" type="text" placeholder="Full Name">
-            <input id="password" type="password" placeholder="Password">
+            <input id="username" type="text" placeholder="Username" value="">
+            <input id="email" type="email" placeholder="Email" value="">
+            <input id="fullName" type="text" placeholder="Full Name" value="">
+            <input id="password" type="password" placeholder="Password" value="">
             <select class="role" id="role">
                 <option value="User">User</option>
                 <option value="Admin">Admin</option>
             </select>
-            <button class="btn add">Add User</button>
-        </div>
+            <button class="btn add" onclick="addUser()">Add User</button>
+        </form>
     </div>
     <script src="../script/adminPanel.js"></script>
 </body>

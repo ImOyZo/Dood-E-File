@@ -59,7 +59,7 @@ async function fetchUserAdmin(id) {
 async function createUser(username, email, fullName, password, role) {
     try {
         const [result] = await pool.query(`
-            INSERT INTO users (username, email, password, role)
+            INSERT INTO users (username, fullName, email, password, role)
             VALUES (?, ?, ?, ?, ?)
             `, [username, email, fullName, password, role])
         const id = result.insertId
@@ -83,13 +83,13 @@ async function deleteUser(id) {
     }
 }
 
-async function updateUser(id, username, email, password, role, usedStorage) {
+async function updateUser(id, username, email, password, role) {
     try {
         const [result] = await pool.query(`
             UPDATE users 
-            SET username = ?, email = ?, password = ?, role = ?, usedStorage = ?
+            SET username = ?, email = ?, password = ?, role = ?
             WHERE userID = ?
-            `, [username, email, password, role, usedStorage, id])
+            `, [username, email, password, role, id])
         return result
     } catch (error) {
         console.error(error)
