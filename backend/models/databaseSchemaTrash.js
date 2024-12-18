@@ -1,0 +1,13 @@
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE files (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    filename VARCHAR(255) NOT NULL,
+    trashed BOOLEAN DEFAULT FALSE,
+    trashed_at TIMESTAMP NULL DEFAULT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
