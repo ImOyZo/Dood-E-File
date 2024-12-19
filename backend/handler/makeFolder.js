@@ -2,12 +2,12 @@ const { fetchUsersFromID } = require('../models/users'); // Assuming this exists
 const Client = require('ssh2-sftp-client');
 
 // Function to create a remote directory
-const makeDirectory = async (req, res, id) => {
+const handleMakeDirectory = async (req, res, folderName, id) => {
   const user = await fetchUsersFromID(id);
   const sftp = new Client();
 
   // Define the directory to be created
-  const remoteDirPath = `/home/${user.username}/${req.body.directoryName}`;
+  const remoteDirPath = `/home/${user.username}/${folderName}`;
 
   try {
     // Connect to the SFTP server
@@ -32,5 +32,5 @@ const makeDirectory = async (req, res, id) => {
 };
 
 module.exports = {
-  makeDirectory,
+  handleMakeDirectory,
 };

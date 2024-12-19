@@ -3,11 +3,13 @@ require('dotenv').config();
 const { fetchUsersFromID } = require('../models/users');
 
 // Endpoint to download a file from the remote server
-const handleFileDownload = async (req, res, filename, id) => {
+const handleFileDownload = async (req, res, filename, path, id) => {
+    console.log("Received path:", req.query.path);
     const user = await fetchUsersFromID(id);
     const sftp = new Client();
-    const remotePath = `/home/${user.username}/${filename}`;
-  
+
+    const remotePath = `/home/${user.username}${path}/${filename}`;
+    console.log("Remote path:", remotePath);
     try {
       await sftp.connect({
         host: process.env.host,

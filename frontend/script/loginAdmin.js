@@ -7,7 +7,7 @@ async function login(){
         const password = document.getElementById('password').value;
 
         try {
-            const response = await fetch('/login/user', {
+            const response = await fetch('/login/admin', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -19,7 +19,7 @@ async function login(){
             if (response.ok) {
                 alert('Login successful!');
                 document.cookie = `loginID=${result.userID}; path=/; max-age=3600`;
-                window.location.href = `/frontend2/pages/dashboard.html?loginID=${result.userID}`;
+                window.location.href = `/frontend2/pages/usermanagement.html?loginID=${result.userID}`;
                 
             } else {
                 alert(result.message);

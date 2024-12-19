@@ -1,5 +1,3 @@
-const { json } = require("body-parser");
-
 function getCookie(name){
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -14,16 +12,33 @@ function getParamQuery(name){
 const userID = getParamQuery('userID');
 
 async function fetchUserIdData(userID) {
+    const loginID = getCookie('loginID')
+    if (!loginID) {
+        window.location.href = '/frontend2/pages/loginadmin.html'; // Redirect to login if no userID found
+        return;
+    }
     try{
-        const response = await fetch(`/user/${userID}`);
-        const user = await response.json();
+        const response = await fetch(`/user/${userID}`, {
+            method: 'GET',
+            headers: {
+                'user-id': loginID
+            },
+            credentials: 'include'
+        });
+        const data = await response.json();
+        if(data.success && data.user){
+            const user = data.user;
+            console.log(user);
+            document.getElementById('name').value = user.username;
+            document.getElementById('fullName').value = user.fullName;
+            document.getElementById('email').value = user.email;
+            document.getElementById('role').value = user.role;
+        } else{
+            console.log('Failed to Fetch user Data');
+        }
 
-        document.getElementById('name').value = user.username;
-        document.getElementById('fullName').value = user.fullName;
-        document.getElementById('email').value = user.email;
-        document.getElementById('role').value = user.role;
-    } catch(err){
-        console.err('Error fetching data', err);
+    } catch(error){
+        console.error('Error fetching data', error);
     }
 }
 
@@ -31,36 +46,36 @@ if(userID){
     fetchUserIdData(userID);
 }
 
-document.querySelector('form').addEventListener('submit', async (event) =>{
-    event.preventDefault();
-
-    const userID = getParamQuery('userID');
-    const username = document.getElementById('name').value;
-    const fullName = document.getElementById('fullName').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const role =document.getElementById('role').value;
-
-    const updateUserData = {username, fullName, email, password, role};
+async function editUser() {
+    const loginID = getCookie('loginID')
+    jsonData = {
+     userID : getParamQuery('userID'),
+     username : document.getElementById('name').value,
+     fullName : document.getElementById('fullName').value,
+     email : document.getElementById('email').value,
+     password : document.getElementById('password').value,
+     role : document.getElementById('role').value,
+    }
 
     try{
-        const response = await fetch('/user/edit/$userID',{
+        const response = await fetch(`/user/edit/${userID}`,{
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                'user-id': loginID
             },
-            body: json.stringify(updateUserData),
+            body: JSON.stringify(jsonData),
         });
         const result = await response.json();
         if(result.success){
             alert('User Updated');
-            window.location.href = '/frontend2/pages/adminpanel.html';
+            window.location.href = `/frontend2/pages/usermanagement.html?loginID=${loginID}`;
         } else{
             alert('Error updating user');
         }
 
-    }catch(err){
-        console.err('Error updating user', err);
+    }catch(error){
+        console.error('Error updating user', error);
         alert('Update user error');
     }
-});
+};

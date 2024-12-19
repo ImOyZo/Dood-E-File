@@ -87,6 +87,12 @@ body {
   transition: border-color 0.3s;
 }
 
+.upload-zone[data-dragging="true"] {
+  border: 2px dashed #007bff;
+  background-color: #e9f7ff;
+}
+
+
 .upload-zone:hover {
   border-color: #495057;
 }
@@ -131,11 +137,36 @@ body {
 }
 
 .file-card {
+  position: relative; /* Needed to allow absolute positioning of dropdown within it */
+  z-index: 1; /* Base z-index for the file card */
+}
+
+/* Style for the dropdown in the file cards */
+.file-card .dropdown {
+  position: absolute;
+  bottom: 10px; /* Adjust this as needed */
+  right: 10px; /* Adjust this as needed */
+  z-index: 1052; /* Make sure dropdown appears above other content */
+}
+
+/* Ensure the dropdown menu appears on top */
+.file-card .dropdown-menu {
+  z-index: 1053; /* Ensure dropdown menu is above the dropdown button */
+}
+
+/* Sort Dropdown (make sure it's lower z-index than file card dropdown) */
+#sortDropdown {
   position: relative;
+  z-index: 1049; /* Lower than file card dropdown */
+}
+
+/* Ensure file cards don’t overlap when hovering */
+.file-card:hover {
+  z-index: 100; /* Ensure the card doesn't push its dropdown behind other cards */
 }
 
 .dropdown {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
+  bottom: 60px;
+  right: 30px;
 }

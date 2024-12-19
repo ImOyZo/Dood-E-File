@@ -1,32 +1,28 @@
-// Cookie 
 function getCookie(name){
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
 }
 
-async function deleteFile(filename) {
-    const userID = getCookie('userID');
+async function recoverFile(filename) {
+    const loginID = getCookie('loginID');
 
-    if (!userID) {
-        // Redirect to login if no userID found
+    if (!loginID) {
         window.location.href = '/frontend2/pages/login.html';
         return;
     }
-
     try {
-        const response = await fetch(`/delete/${filename}`, {
-            method: 'DELETE',
+        const response = await fetch(`/file/recover/${filename}`, {
+            method: 'POST',
             headers: {
-                'user-id': userID
+                'user-id': loginID
             },
             credentials: 'include'
         });
-
         if (response.ok) {
-            alert(`File "${filename}" has been deleted successfully.`);
-            // Optionally refresh the file list
-            fetchFiles();
+            alert(`File "${filename}" has been recovered successfully.`);
+            // Refresh file list after deletion
+            fetchFilesTrash();
         } else {
             const errorMsg = await response.text();
             alert(`Failed to delete file: ${errorMsg}`);
@@ -37,151 +33,41 @@ async function deleteFile(filename) {
     }
 }
 
+async function deleteFile(filename) {
+    const loginID = getCookie('loginID');
 
-// Function to upload file to backend
-async function uploadFile() {
-    const fileInput = document.getElementById('file-upload');
-    const file = fileInput.files[0];
-
-    if (!file) {
-        alert('Please select a file first!');
+    if (!loginID) {
+        window.location.href = '/frontend2/pages/login.html';
         return;
     }
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const userID = getCookie('userID');
-
-    if (!userID) {
-        //alert('You must log in first!');
-        window.location.href = '/frontend2/pages/login.html'; // Redirect to login if no userID found
-        return;
-    }
-
-
     try {
-        // Fetch /upload  
-        const response = await fetch('/upload', {
-            method: 'POST',
-            body: formData,
+        const response = await fetch(`/file/delete/${filename}`, {
+            method: 'DELETE',
             headers: {
-                'user-id': userID
+                'user-id': loginID
             },
             credentials: 'include'
         });
-
         if (response.ok) {
-            alert('File uploaded successfully!');
-            // Refresh the file list after successful upload
-            if (typeof fetchFiles === 'function') {
-                fetchFiles();
-            }
+            alert(`File "${filename}" has been moved tp trash successfully.`);
+            // Refresh file list after deletion
+            fetchFilesTrash();
         } else {
-            alert('Upload failed');
+            const errorMsg = await response.text();
+            alert(`Failed to delete file: ${errorMsg}`);
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Upload error');
+        console.error('Delete error:', error);
+        alert('An error occurred while deleting the file.');
     }
 }
 
-// Download File Function
-async function downloadFile(filename) {
-    const userID = getCookie('userID');
-
-    if (!userID) {
-        //alert('You must log in first!');
-        window.location.href = '/frontend2/pages/login.html'; // Redirect to login if no userID found
-        return;
-    }
-
-    try {
-        const response = await fetch(`/download/${filename}`, {
-            method: 'GET',
-            headers: {
-                'user-id': userID
-            },
-            credentials: 'include'
-        });
-
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-
-            // Create an anchor element to trigger the download
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;  
-            document.body.appendChild(a);  
-            a.click();  
-            document.body.removeChild(a);  
-
-            // Clean up the object URL
-            window.URL.revokeObjectURL(url);
-        } else {
-            alert('Download failed');
-        }
-    } catch (error) {
-        console.error('Download error:', error);
-        alert('Download failed');
-    }
-}
-
-async function openRenameModal(filePath) {
-    document.getElementById('oldFilePath').value = filePath;
-    document.getElementById('newFileName').value = '';
-    
-    const renameModal = new bootstrap.Modal(document.getElementById('renameModal'));
-    renameModal.show();
-}
-// Broken
-async function renameFile() {
-    const userID = getCookie('userID')
-    const newName = document.getElementById('newFileName').value;
-    const oldFilePath = document.getElementById('oldFilePath').value;
-
-    if (newName && oldFilePath) {
-        try {
-            const response = await fetch('/renamefile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'user-id': userID,
-                }, 
-                credentials: 'include',
-                body: JSON.stringify({
-                    path: oldFilePath,
-                    newName: newName,
-                    userID: userID
-                    
-                })
-            });
-
-            const result = await response.json();
-            if (response.ok) {
-                alert('File Rename Success');
-                const renameModal = bootstrap.Modal.getInstance(document.getElementById('renameModal'));
-                renameModal.hide();
-            } else {
-                alert(result.message || 'Error Renaming File');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    } else {
-        alert('Enter Valid New Name');
-    }
-}
-
-// Set Fetching File Dir
-// Start at the root directory
 let currentPath = '/'; 
-async function fetchFiles(){
+async function fetchFilesTrash(){
 
-    const userID = getCookie('userID');
+    const loginID = getCookie('loginID');
 
-    if (!userID) {
+    if (!loginID) {
         //alert('You must log in first!');
         window.location.href = '/frontend2/pages/login.html'; // Redirect to login if no userID found
         return;
@@ -192,11 +78,11 @@ async function fetchFiles(){
 
     try {
         // Fetch /files from the Backend
-        const response = await fetch(`/files?userID=${userID}&path=${encodeURIComponent(currentPath)}`, {
+        const response = await fetch(`/file/trashlist?loginID=${loginID}&path=${encodeURIComponent(currentPath)}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
-                'user-id': userID
+                'user-id': loginID
             },
             credentials: 'include'
         });
@@ -210,7 +96,7 @@ async function fetchFiles(){
         const files = await response.json(); 
 
         // Clear existing files in the container
-        container.innerHTML = "";
+        container.innerHTML = '';
 
         if (files.length === 0) {
             container.innerHTML = '<p>No files uploaded yet.</p>';
@@ -238,16 +124,14 @@ async function fetchFiles(){
                         <div class="card-body text-center position-relative">
                             <i data-feather="${isDirectory ? 'folder' : 'file'}" class="text-primary mb-3w4z" style="width: 50px; height: 50px"></i>
                             <h6 class="card-title">${file.name}</h6>
-                            <p class="text-muted small">${file.size ? file.size + ' KB' : ''}</p>
+                            <p class="text-muted small">${file.size ? file.size + ' MB' : ''}</p>
 
                             <div class="dropdown position-absolute bottom-0 end-0 p-2">
-                                <button class="btn btn-link text-dark" type="button" id="dropdownMenuButton${file.name}" data-bs-toggle="dropdown" aria-expanded="false">
+                                <button class="btn btn-link text-dark" type="button" onclick="event.stopPropagation()" id="dropdownMenuButton${file.name}" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i data-feather="more-vertical"></i>
                                 </button>
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton${file.name}">
-                                    <li><a class="dropdown-item" onclick="downloadFile('${file.name}')">Download</a></li>
-                                    <li><a class="dropdown-item" onclick="openRenameModal('${file.name}')">Rename</a></li>
-                                    <li><a class="dropdown-item" onclick="share('${file.name}')">Share</a></li>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton${file.name}" onclick="event.stopPropagation()">
+                                    <li><a class="dropdown-item" onclick="recoverFile('${file.name}')">Recover</a></li>
                                     <li><a class="dropdown-item text-danger" onclick="deleteFile('${file.name}')">Delete</a></li>
                                 </ul>
                             </div>
@@ -264,7 +148,6 @@ async function fetchFiles(){
     }
 }
 
-// Function to handle file/folder click
 function handleFileClick(name, isDirectory) {
     if (isDirectory) {
         // If we're at the root or the path already ends with a slash, just append the folder name
@@ -278,14 +161,13 @@ function handleFileClick(name, isDirectory) {
         }
 
         console.log('Updated path:', currentPath);  // For debugging
-        fetchFiles(); // Fetch the files in the new directory
+        fetchFilesTrash(); // Fetch the files in the new directory
     }
 }
 
 function navigateToFolder(path){
     currentPath = path;
-    fetchFiles();
+    fetchFilesTrash();
 }
 
-// Initial call to fetch files on page load
-fetchFiles();
+fetchFilesTrash();

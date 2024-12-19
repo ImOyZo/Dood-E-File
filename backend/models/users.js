@@ -41,27 +41,12 @@ async function fetchUsersFromID(id) {
     }
 }
 
-async function fetchUserAdmin(id) {
-    try {
-        const [result] = await pool.query(`
-            SELECT *
-            FROM users 
-            WHERE userID = ? AND role = admin
-            `, [userID])
-            return [0]
-        } catch(err) {
-            console.log (err)
-            return err
-        }
-    
-}
-
-async function createUser(username, email, fullName, password, role) {
+async function createUser(username,fullName, email, password, role) {
     try {
         const [result] = await pool.query(`
             INSERT INTO users (username, fullName, email, password, role)
             VALUES (?, ?, ?, ?, ?)
-            `, [username, email, fullName, password, role])
+            `, [username, fullName, email, password, role])
         const id = result.insertId
         return fetchUsersFromID(id)
     } catch (error) {
@@ -83,13 +68,13 @@ async function deleteUser(id) {
     }
 }
 
-async function updateUser(id, username, email, password, role) {
+async function updateUser(id, username, fullName, email, password, role) {
     try {
         const [result] = await pool.query(`
             UPDATE users 
-            SET username = ?, email = ?, password = ?, role = ?
+            SET username = ?, fullName = ?, email = ?, password = ?, role = ?
             WHERE userID = ?
-            `, [username, email, password, role, id])
+            `, [username, fullName, email, password, role, id])
         return result
     } catch (error) {
         console.error(error)
@@ -104,5 +89,4 @@ module.exports = {
     updateUser,
     deleteUser,
     createUser,
-    fetchUserAdmin,
 };

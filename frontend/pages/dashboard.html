@@ -28,15 +28,9 @@
           <span class="input-group-text"><i data-feather="search"></i></span>
         </div>
         <div class="navbar-extra d-flex align-items-center">
-          <div class="dropdown">
-            <a href="#" id="bell" class="me-3" data-bs-toggle="dropdown" aria-expanded="false">
-              <i data-feather="bell"></i>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end p-2" id="notificationDropdown" aria-labelledby="bell">
-              <li class="dropdown-header">Notifications</li>
-              <li><p class="text-muted small">Loading...</p></li>
-            </ul>
-          </div>
+          <a href="#" id="bell" class="me-3">
+            <i data-feather="bell"></i>
+          </a>
           <a href="#" id="settings" class="me-3">
             <i data-feather="settings"></i>
           </a>
@@ -69,26 +63,13 @@
               </a>
             </li>
           </ul>
-          <div style="display: none;" class="p-3">
-            <div class="progress">
-              <div
-                class="progress-bar bg-primary"
-                role="progressbar"
-                style="width: 37%"
-                aria-valuenow="37"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              ></div>
-            </div>
-            <small class="text-muted">37 GB of 100 GB used</small>
-          </div>
         </div>
 
         <!-- Main Content -->
         <div class="col-md-9 col-lg-10 p-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 id="current-path" >My Drive</h4>
-            <div class="dropdown">
+            <div class="dropdown" style="position: absolute; top: 60px; right: 40px;">
               <button
                 class="btn btn-outline-secondary dropdown-toggle"
                 type="button"
@@ -112,32 +93,86 @@
             </div>
           </div>
           <div class="plusicon fixed-bottom-right">
-            <a id="plus" data-bs-toggle="modal" data-bs-target="#uploadModal"><i data-feather="plus"></i></a>
+            <a id="plus" data-bs-toggle="modal" data-bs-target="#actionModal">
+              <i data-feather="plus"></i>
+            </a>
           </div>
           <div class="row g-3" id="fileContainer"></div>
-        </div>
-
-        <!-- Modal Upload -->
-<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h5 class="modal-title" id="uploadModalLabel">Upload Document</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-              <div class="upload-zone" id="upload-zone">
-                  <i class="bi bi-upload upload-icon"></i>
-                  <p class="mt-2">Drag and drop your file here, or 
-                      <label for="file-upload" class="text-primary">browse</label>
-                  </p>
-                  <input type="file" id="file-upload" />
+          
+          <!-- Action Selection Modal -->
+          <div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="actionModalLabel">Choose Action</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <button class="btn btn-outline-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#createFolderModal" data-bs-dismiss="modal">
+                    Create Folder
+                  </button>
+                  <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#uploadModal" data-bs-dismiss="modal" onclick="setUploadPath()">
+                    Upload File
+                  </button>
+                </div>
               </div>
-              <button class="btn btn-primary btn-upload" onclick="uploadFile()">Upload</button>
+            </div>
           </div>
-      </div>
-  </div>
-</div>
+
+          <!-- Upload File Modal-->
+          <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="uploadModalLabel">Upload Document</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="upload-zone" id="upload-zone" data-dragging="false">
+                            <i class="bi bi-upload upload-icon"></i>
+                            <p class="mt-2">Drag and drop your file here, or 
+                                <label for="file-upload" class="text-primary">browse</label>
+                            </p>
+                            <input type="file" id="file-upload" />
+                        </div>
+                        <input type="hidden" id="uploadPath"/>
+                        <div class="p-3">
+                          <div class="progress">
+                            <div
+                              id="uploadProgress"
+                              class="progress-bar bg-primary"
+                              role="progressbar"
+                              style="width: 0%"
+                              aria-valuenow="0"
+                              aria-valuemin="0"
+                              aria-valuemax="100"
+                            >0%</div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+          
+          <!-- Create Folder Modal -->
+          <div class="modal fade" id="createFolderModal" tabindex="-1" aria-labelledby="createFolderModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="createFolderModalLabel">Create Folder</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <label for="folderName">Enter folder name:</label>
+                  <input type="text" class="form-control" id="folderName" value="" />
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary" onclick="createFolder()">Create Folder</button>
+                </div>
+              </div>
+            </div>
+          </div>
 
 <!-- Rename Modal -->
 <div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameModalLabel" aria-hidden="true">
@@ -161,7 +196,6 @@
   </div>
 </div>
 </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>

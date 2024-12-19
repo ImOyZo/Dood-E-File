@@ -15,12 +15,13 @@ const upload = multer({
 });
 
 // Endpoint to handle file upload
-const handleFileUpload = async (req, res, id) => {
+const handleFileUpload = async (req, res, io, id) => {
   const user = await fetchUsersFromID(id);
   const sftp = new Client();
   const tempPath = req.file.path;
-  const remotePath = `/home/${user.username}/${req.file.originalname}`;
 
+  const folderPath = req.query.path || '/';
+  const remotePath = `/home/${user.username}${folderPath}/${req.file.originalname}`;
   try {
     await sftp.connect({
       host: process.env.host,
@@ -29,16 +30,27 @@ const handleFileUpload = async (req, res, id) => {
       password: user.password,
     });
 
-    await sftp.put(tempPath, remotePath);
-    console.log(`Uploaded ${req.file.originalname} to ${remotePath}`);
-
     const fileName = req.file.originalname;
     const fileSize = req.file.size;
     const ownerID = id;
     const path = remotePath;
-    const fileID = id + fileSize;
 
-    const result = await createFile(fileID, fileName, fileSize, ownerID, path);
+    // Ensure the target folder exists before uploading
+    await sftp.mkdir(remotePath.substring(0, remotePath.lastIndexOf('/')), true);
+
+    const stream = fs.createReadStream(tempPath); 
+    let uploadedSize = 0;
+
+    stream.on('data', (chunk) => {
+      uploadedSize += chunk.length;
+      const progress = ((uploadedSize / fileSize) * 100).toFixed(2);
+      // Emit progress to the client
+      io.emit('uploadProgress', { fileName: req.file.originalname, progress });
+    });
+
+    await sftp.put(stream, remotePath);
+
+    const result = await createFile(fileName, fileSize, ownerID, path);
 
     // Respond to client
     res.send('File uploaded successfully!');

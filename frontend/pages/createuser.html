@@ -11,19 +11,20 @@
         <h1>DOODEFILE</h1>
         <h2>Create New User</h2>
         <div class="add-user">
-            <input type="text" placeholder="Username">
-            <input type="email" placeholder="Email">
-            <input type="text" placeholder="Full Name">
-            <input type="password" placeholder="Password">
-            <select>
+            <input type="text" id="username" placeholder="Username" value="">
+            <input type="text" id="fullName" placeholder="Full Name" value="">
+            <input type="email" id="email" placeholder="Email" value="">
+            <input type="password" id="password" placeholder="Password" value="">
+            <select id="role">
                 <option value="User">User</option>
                 <option value="Admin">Admin</option>
             </select>
             <!-- Perbaikan: Link dimasukkan di sekitar tombol -->
             <a href="usermanagement.html">
-                <button class="btn add">Add User</button>
+                <button class="btn add" onclick="addUser()">Add User</button>
             </a>
         </div>
     </div>
+    <script src="../script/createuser.js"></script>
 </body>
 </html>

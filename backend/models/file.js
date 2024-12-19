@@ -62,11 +62,11 @@ async function fetchStarred(ownerID) {
     }
 }
 
-async function createFile(fileID, fileName, fileSize, ownerID, path) {
+async function createFile(fileName, fileSize, ownerID, path) {
     try {
         const [result] = await pool.query(`
-            INSERT INTO file (fileID, fileName, fileSize, ownerID, path) VALUES (?, ?, ?, ?,?)`
-            , [fileID, fileName, fileSize, ownerID, path])
+            INSERT INTO file (fileName, fileSize, ownerID, path) VALUES (?, ?, ?,?)`
+            , [fileName, fileSize, ownerID, path])
         return fetchFile(ownerID, fileName)
     } catch (error) {
         console.error(error)

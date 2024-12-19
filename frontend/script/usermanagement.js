@@ -5,8 +5,19 @@ function getCookie(name) {
 }
 
 async function deleteUser(userID) {
+    const loginID = getCookie('loginID')
+    if (!loginID) {
+        window.location.href = '/frontend2/pages/login.html';
+        return;
+    }
     try {
-        const response = await fetch(`/user/delete${userID}`, { method: 'DELETE' });
+        const response = await fetch(`/user/delete/${userID}`, { 
+            method: 'DELETE', 
+            headers: {
+                'user-id': loginID
+            },
+            credentials: 'include'
+        });
         const result = await response.json();
         if (result.success) {
             alert('User deleted successfully!');
@@ -21,16 +32,29 @@ async function deleteUser(userID) {
 }
 
 async function editUser(userID) {
-    const username = document.getElementById()
-
-    if (username && email && password && role) {
+    const loginID = getCookie('loginID')
+    if (!loginID) {
+        window.location.href = '/frontend2/pages/login.html';
+        return;
+    }
+    jsonData = {
+        username : document.getElementById('username').value,
+        fullName : document.getElementById('fullName').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        role: document.getElementById('role').value
+    }
+    
+    if (username && fullName && email && password && role) {
         try {
-            const response = await fetch(`/user/edit${userID}`, {
-                method: 'PUT',
+            const response = await fetch(`/user/edit/${userID}`, {
+                method: 'PUT', 
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'user-id': loginID
                 },
-                body: JSON.stringify({ username, email, password, role })
+                body: JSON.stringify(jsonData),
+                credentials: 'include'
             });
 
             const result = await response.json();
@@ -47,46 +71,25 @@ async function editUser(userID) {
     }
 }
 
-async function addUser() {
-    const loginID = getCookie(loginID);
-    console.log("Button clicked, addUser function triggered");
-    const jsonData = {
-        username: document.getElementById('username').value,
-        fullName: document.getElementById('fullName').value,
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value,
-        role: document.getElementById('role').value,
-    };
-
-    if (jsonData.username && jsonData.fullName && jsonData.email && jsonData.password && jsonData.role) {
-        try {
-            const response = await fetch(`/user/add`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'user-id': loginID
-                },
-                body:  JSON.stringify(jsonData) // Correctly encode the data
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                alert('User added successfully!');
-                window.location.reload();
-            } else {
-                alert('Error adding user');
-            }
-        } catch (error) {
-            console.error('Error adding user:', error);
-            alert('Error adding user');
-        }
-    }
-}
 
 // Fetch user to show in admin panel
 async function fetchUser() {
+    const loginID = getCookie('loginID')
+    if (!loginID) {
+        window.location.href = '/frontend2/pages/login.html';
+        return;
+    }
+
     try {
-        const response = await fetch('/user/list');
+        const response = await fetch(`/user/list?loginID=${loginID}`,{
+            method: 'GET',
+            headers: {
+                'user-id': loginID,
+            },
+            credentials: 'include'
+        }) 
+           
+        
         const users = await response.json();
         renderUserTable(users);
     } catch (error) {
@@ -117,12 +120,14 @@ function renderUserTable(users){
             <div id="email">${user.email}</div>
             <div id="role">${user.role}</div>
             <div>
-                <button class="btn edit" data-id="${user.userID}">Edit</button>
-                <button class="btn delete" data-id=${user.userID}>Delete</button>
+                <button class="btn edit" data-id="${user.userID}" onclick="editUser(${user.userID})">Edit</button>
+                <button class="btn delete" data-id=${user.userID} onclick="deleteUser(${user.userID})">Delete</button>
             </div>
         `;
         table.appendChild(row);
     });
+
+    buttonListener();
 }
 
 // Listen to button click in dynamic html
@@ -142,11 +147,12 @@ function buttonListener(){
     });
 
     document.querySelector('.user-table').addEventListener('click', (event) => {
+        const loginID = getCookie('loginID');
         if (event.target.classList.contains('edit')) {
             const userID = event.target.getAttribute('data-id');  // Get the userID from the data-id attribute
 
             // Redirect to the edit profile page, passing the userID as a query parameter
-            window.location.href = `/frontend2/pages/useredit.html?userID=${userID}`;
+            window.location.href = `/frontend2/pages/useredit.html?loginID=${loginID}&userID=${userID}`;
         }
     });
 }

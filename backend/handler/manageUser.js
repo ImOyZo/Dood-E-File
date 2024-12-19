@@ -1,14 +1,14 @@
-//===========================================================================================\\
-// PLEASE HANDLE THIS CODE CAREFULLY AS REQUEST / COMMAND CAN BE DIRECTLY SENT TO MAIN SERVER \\   
-//===========================================================================================\\
+//=============================================================================================\\
+// PLEASE HANDLE THIS CODE CAREFULLY AS A REQUEST / COMMAND CAN BE DIRECTLY SENT TO MAIN SERVER \\   
+//==============================================================================================\\
 
 const { exec } = require('child_process');
-const { fetchUsersFromID, fetchUserAdmin, fetchUsers, createUser, deleteUser, updateUser } = require('../models/users');
+const { fetchUsersFromID, fetchUsers, createUser, deleteUser, updateUser } = require('../models/users');
 
 // Create Linux User
 function createLinuxUser(username, password, callback) {
     // Create the user
-    exec(`sudo useradd -m ${username}`, (error, stdout, stderr) => {
+    exec(`useradd -m ${username}`, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error creating user: ${error.message}`);
             return callback(error, null);
@@ -32,13 +32,27 @@ function createLinuxUser(username, password, callback) {
             console.log(`Password for ${username} set successfully.`);
             callback(null, stdout);
         });
+
+        //Create trash folder for user
+        exec(`mkdir /home/${username}/.trash && chown ${username} /home/${username}/.trash`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error creating trash folder ${error.message}`);
+                return callback(error, null);
+            }
+            if (stderr) {
+                console.error(`stderr: ${stderr}`);
+                return callback(stderr, null);
+            }
+            console.log(`Trash for ${username} created successfully.`);
+            callback(null, stdout);
+        });
     });
 }
 
 // Edit Linux User and Password
 function editLinuxUser(oldUsername, newUsername, password, callback) {
     // Change username
-    exec(`sudo usermod -l ${newUsername} ${oldUsername}`, (error, stdout, stderr) => {
+    exec(`usermod -l ${newUsername} ${oldUsername}`, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error editing user: ${error.message}`);
             return callback(error, null);
@@ -50,7 +64,7 @@ function editLinuxUser(oldUsername, newUsername, password, callback) {
         console.log(`Username changed from ${oldUsername} to ${newUsername} successfully.`);
 
         // Set new password
-        exec(`echo "${newUsername}:${password}" | sudo chpasswd`, (error, stdout, stderr) => {
+        exec(`echo "${newUsername}:${password}" | chpasswd`, (error, stdout, stderr) => {
             if (error) {
                 console.error(`Error setting new password: ${error.message}`);
                 return callback(error, null);
@@ -67,15 +81,7 @@ function editLinuxUser(oldUsername, newUsername, password, callback) {
 
 // Delete Linux User
 function deleteLinuxUser(username, callback) {
-    exec(`sudo userdel -r ${username}`, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error deleting user: ${error.message}`);
-            return callback(error, null);
-        }
-        if (stderr) {
-            console.error(`stderr: ${stderr}`);
-            return callback(stderr, null);
-        }
+    exec(`userdel -r ${username} || true`, (error, stdout, stderr) => {
         console.log(`User ${username} deleted successfully.`);
         callback(null, stdout);
     });
@@ -114,7 +120,7 @@ const handleAddUser = async (req, res, username, fullName, email, password, role
             console.log('Linux user created and password set successfully!');
         });
 
-        const newUserDB = await createUser(username, email, fullName, password, role);
+        const newUserDB = await createUser(username, fullName, email, password, role);
         return res.json({ success: true, newUserDB });
     } catch (error) {
         console.error('Error creating user:', error);
@@ -139,7 +145,7 @@ const handleEditUser = async (req, res, userID, username, fullName, email, passw
         });
 
         // Update user in the database
-        const updatedUserDB = await updateUser(userID, username, email, fullName, password, role);
+        const updatedUserDB = await updateUser(userID, username, fullName, email, password, role);
         res.json({ success: true, updatedUserDB });
     } catch (error) {
         console.error('Error editing user:', error);

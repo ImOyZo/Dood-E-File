@@ -41,12 +41,26 @@ const handleFileList = async (req, res, id) => {
         console.log('Full path:', fullPath);
 
         // Map the files to a JSON structure
-        const files = fileList.map((file) => ({
+        const files = fileList
+        .filter((file) => !file.name.startsWith('.',)&& file.name != 'trash')
+        .map((file) => ({
             name: file.name,
-            size: file.size,
+            size: (file.size / (1024 * 1024)).toFixed(2),
             type: file.type === '-' ? 'file' : 'directory',
-            date: file.modifyTime ? new Date(file.modifyTime * 1000).toLocaleDateString() : 'N/A',
+            date: file.modifyTime ? new Date(file.modifyTime * 1000).toLocaleDateString() : 'N/A', //tanya wahyu besok
         }));
+
+// sorting algorithm
+
+       //const sortBy = req.query.sortBy || 'name'; // Default sort by name
+      //  if (sortBy === 'name') {
+     //       files.sort((a, b) => a.name.localeCompare(b.name));
+    //    } else if (sortBy === 'size') {
+   //         files.sort((a, b) => a.size - b.size);
+  //      } else if (sortBy === 'date') {
+ //           files.sort((a, b) => new Date(b.date) - new Date(a.date)); // Newest files first
+//        }
+
 
         res.json(files); // Send the list of files as JSON
     } catch (err) {
