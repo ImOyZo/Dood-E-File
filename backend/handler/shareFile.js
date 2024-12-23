@@ -116,6 +116,47 @@ const handleSharedDownload = async (req, res) => {
   }
 };
 
+const fetchFileDetails = async (loginID, pathFile) => {
+    const user = await fetchUsersFromID(loginID);
+
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    const sftp = new Client();
+    const baseDir = `/home/${user.username}/`; // Base directory for the user
+    const sanitizedPath = pathFile.replace(/\/+$/, ''); // Remove trailing slashes
+
+    if (sanitizedPath.includes('..')) {
+      throw new Error('Invalid Path');
+    }
+
+    const filePath = path.join(baseDir, sanitizedPath); // Resolve full path
+
+    try {
+        await sftp.connect({
+            host: process.env.host,
+            port: process.env.port,
+            username: user.username,
+            password: user.password,
+        });
+
+        const fileDetails = await sftp.stat(filePath);
+
+        return {
+            name: path.basename(filePath),
+            size: (fileDetails.size / (1024 * 1024)).toFixed(2), // Size in MB
+            type: fileDetails.type === '-' ? 'file' : 'directory', // File type
+            date: fileDetails.modifyTime ? new Date(fileDetails.modifyTime * 1000).toLocaleDateString() : 'N/A', // Modification date
+        };
+    } catch (error) {
+        console.error('Error fetching file details:', error.message);
+        throw new Error('Failed to fetch file details');
+    } finally {
+        await sftp.end();
+    }
+}
+
 
 const fetchFolderContents = async (loginID, folderPath) => {
     // Fetch user based on the loginID from the database
@@ -169,6 +210,7 @@ const fetchFolderContents = async (loginID, folderPath) => {
 module.exports = {
   upload,
   handleSharedUpload,
+  fetchFileDetails,
   handleSharedDownload,
   fetchFolderContents
 };

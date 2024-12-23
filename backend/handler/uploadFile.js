@@ -4,6 +4,7 @@ const Client = require('ssh2-sftp-client');
 require('dotenv').config();
 const { fetchUsersFromID } = require('../models/users');
 const { createFile } = require('../models/file');
+const { createLog } = require('../models/activityLog'); 
 
 // Set up Multer for file upload with disk storage
 const upload = multer({
@@ -22,6 +23,8 @@ const handleFileUpload = async (req, res, io, id) => {
 
   const folderPath = req.query.path || '/';
   const remotePath = `/home/${user.username}${folderPath}/${req.file.originalname}`;
+
+  
   try {
     await sftp.connect({
       host: process.env.host,
@@ -51,6 +54,9 @@ const handleFileUpload = async (req, res, io, id) => {
     await sftp.put(stream, remotePath);
 
     const result = await createFile(fileName, fileSize, ownerID, path);
+
+    const dateString = new Date().toLocaleDateString();
+    await createLog(id, id, `Uploaded file: ${fileName}`, dateString);
 
     // Respond to client
     res.send('File uploaded successfully!');

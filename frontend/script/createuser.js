@@ -9,7 +9,7 @@ async function addUser() {
     const loginID = getCookie('loginID');
 
     if (!loginID) {
-        window.location.href = '/frontend2/pages/login.html';
+        window.location.href = '/frontend/pages/login.html';
         return;
     }
     console.log("Button clicked, addUser function triggered");
@@ -36,7 +36,7 @@ async function addUser() {
             const result = await response.json();
             if (result.success) {
                 alert('User added successfully!');
-                window.location.href = '/frontend2/pages/usermanagement.html'
+                window.location.href = '/frontend/pages/usermanagement.html'
             } else {
                 alert('Error adding user');
             }

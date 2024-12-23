@@ -35,11 +35,13 @@ async function fetchFolder(ownerID, folderName) {
 }
 
 async function createFolder(folderName, ownerID, path) {
+    const normalizedPath = path.replace(/\/\//g, '/');
+
     try {
         const [result] = await pool.query(`
             INSERT INTO folder (folderName, ownerID, path)
             VALUES (?, ?, ?)
-            `, [folderName, ownerID, path])
+            `, [folderName, ownerID, normalizedPath])
         return fetchFolder(ownerID, folderName)
     } catch (error) {
         console.error(error)

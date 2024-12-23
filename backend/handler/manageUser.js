@@ -34,7 +34,7 @@ function createLinuxUser(username, password, callback) {
         });
 
         //Create trash folder for user
-        exec(`mkdir /home/${username}/.trash && chown ${username} /home/${username}/.trash`, (error, stdout, stderr) => {
+        exec(`mkdir /home/${username}/trash && chown ${username} /home/${username}/trash`, (error, stdout, stderr) => {
             if (error) {
                 console.error(`Error creating trash folder ${error.message}`);
                 return callback(error, null);

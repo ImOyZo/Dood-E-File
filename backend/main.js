@@ -1,6 +1,8 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
+const fs = require('fs');
+const pathModule = require('path');
 const { handleAddUser, 
         handleDeleteUser, 
         handleEditUser, 
@@ -10,12 +12,13 @@ const { handleAddUser,
 const { handleMakeDirectory } = require('./handler/makeFolder');
 const { upload, handleFileUpload } = require('./handler/uploadFile');
 const { handleFileDownload } = require('./handler/downloadFile');
-const { handleFileList } = require('./handler/listFile');
+const { handleFileList, handlePreview } = require('./handler/listFile');
 const { handleLoginUser, handleLoginAdmin } = require('./handler/login');
 const { handleRenameFile } = require('./handler/renameFile');
 const { handleFileDelete, handleMoveTrash, HandleRecoverFromTrash, handleListTrash } = require('./handler/trashFile');
-const { handleStarredFile } = require('./handler/starredFile');
-const { fetchFolderContents, handleSharedDownload, handleSharedUpload } = require('./handler/shareFile')
+const { handleStarredFile, handleTrueStarred, handleFalseStarred } = require('./handler/starredFile');
+const { fetchFolderContents, handleSharedDownload, handleSharedUpload, fetchFileDetails } = require('./handler/shareFile')
+const { handleNotification } = require('./handler/notification');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -63,9 +66,21 @@ app.get('/file/list', async (req, res) => {
     await handleFileList(req, res, loginID);
 });
 
+app.get('/file/preview', async (req, res) => {
+    const loginID = req.headers['user-id'];
+    const path = req.query.path || '/';
+    const fileName = req.query.file;
+    console.log('Received request for preview', loginID, path, fileName);
+    if (!loginID) {
+        return res.status(401).json({ message: 'User not authenticated' });
+    }   
+    await handlePreview(req, res, loginID);
+});
+
 app.post('/file/createfolder', async (req, res) => {
     const loginID = req.headers['user-id'];
     const folderName = req.body.folderName;
+    console.log('Path Received:', req.query.path); // Debug: log the received path
     if (!loginID) {
         return res.status(401).json({ message: 'User not authenticated' });
     } 
@@ -87,6 +102,15 @@ app.get('/file/download/:filename', async (req, res) => {
     await handleFileDownload(req, res, filename,path, loginID);
 });
 
+app.get('/notification/list', async (req, res) => {
+    console.log('Received request on /notification/list');
+    const loginID = req.headers['user-id'];
+    if (!loginID) {
+        return res.status(401).json({ message: 'User not authenticated' });
+    } 
+    await handleNotification(req, res, loginID);
+});
+
 // Route to Request File Upload
 app.post('/file/upload', upload.single('file'), async (req, res) => {
     const loginID = req.headers['user-id'];  
@@ -97,7 +121,7 @@ app.post('/file/upload', upload.single('file'), async (req, res) => {
 });
 
 // Route to Request Starred file
-app.get('/file/starred', async (req, res) => {
+app.get('/file/starred/list', async (req, res) => {
     const loginID = req.headers['user-id'];
     if (!loginID) {
         return res.status(401).json({ message: 'User not authenticated' });
@@ -105,13 +129,36 @@ app.get('/file/starred', async (req, res) => {
     await handleStarredFile(req, res, loginID);
 })
 
+app.post('/file/starred/add/:filename', async (req, res) => {
+    const loginID = req.headers['user-id'];
+    const fileName = req.params.filename;
+    if (!loginID) {
+        return res.status(401).json({ message: 'User not authenticated' });
+    }
+    await handleTrueStarred(req, res, fileName, loginID);
+});
+
+app.post('/file/starred/remove/:filename', async (req, res) => {
+    const loginID = req.headers['user-id'];
+    const fileName = req.params.filename;
+    if (!loginID) {
+        return res.status(401).json({ message: 'User not authenticated' });
+    }
+    await handleFalseStarred(req, res, fileName, loginID);
+});
+
 //Route to Request File Rename
 app.post('/file/renamefile', async (req, res) => {
+    const { newName, oldFileName } = req.body;
+    const path = req.query.path || '/';
+    console.log('Base Path:', path); // Debug: log the received path
+    console.log('Old Name:',oldFileName);
+    console.log('New name:', newName); // Debug: log the new name
     const loginID = req.headers['user-id'];
     if (!loginID) {
         return res.status(401).json({ message: 'User not authenticated'});
     }
-    await handleRenameFile (req, res, loginID);
+    await handleRenameFile (req, res, path, newName, oldFileName, loginID);
 });
 
 // List Trash Folder Based on userID
@@ -226,7 +273,8 @@ app.post('/file/share', async (req, res) => {
 
         fileDB.set(shareToken, shareData);
 
-        const shareLink = `http://192.168.191.10/file/share/${shareToken}`;
+        // Change the link if needed
+        const shareLink = `https://doodefile.randomflies.my.id/file/share/${shareToken}`;
         res.json({ shareLink });
     } catch (error) {
         console.error('Error sharing file/folder:', error);
@@ -244,19 +292,75 @@ app.get('/file/share/:token', async (req, res) => {
 
     const { name, isDirectory, path, loginID } = shareData;
 
+    console.log('Share Data:', shareData);
+    console.log('Path for shared content:', path + '/' + name);
+    console.log('Is Directory:', isDirectory);
+
     try {
         if (!isDirectory) {
-            const fileStream = await handleSharedDownload(loginID, path + '/' + name);
-            res.setHeader('Content-Disposition', `attachment; filename="${name}"`);
-            return fileStream.pipe(res); // Directly download the file
-        }
+            // Handle the file sharing case
+            const fileDetails = await fetchFileDetails(loginID, path);
 
-        let folderContentsHtml = '';
-        if (isDirectory) {
-            // Fetch folder contents for the directory
+            // Create the HTML to display file details
+            const fileDetailsHtml = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="utf-8" />
+                    <meta name="viewport" content="width=device-width, initial-scale=1" />
+                    <title>${fileDetails.name}</title>
+                    <link
+                        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+                        rel="stylesheet"
+                    />
+                    <link rel="stylesheet" href="../styles/dashboard.css" />
+                </head>
+                <body>
+                    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                        <div class="container-fluid">
+                            <a class="navbar-brand text-primary fw-bold" href="#">DOODE</a>
+                        </div>
+                    </nav>
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-9 col-lg-10 p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 id="current-path">${fileDetails.name}</h4>
+                                </div>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p><strong>Size:</strong> ${fileDetails.size} MB</p>
+                                        <p><strong>Type:</strong> ${fileDetails.type}</p>
+                                        <p><strong>Last Modified:</strong> ${fileDetails.date}</p>
+                                        <div class="dropdown">
+                                            <button class="btn btn-primary" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Download
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                <li><a class="dropdown-item" href="/file/share/${token}?path=${encodeURIComponent(path)}&filename=${encodeURIComponent(name)}" download="${fileDetails.name}">Download</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+                    <script src="https://unpkg.com/feather-icons"></script>
+                    <script>
+                        feather.replace();
+                    </script>
+                </body>
+                </html>
+            `;
+
+            res.send(fileDetailsHtml);
+
+        } else {
+            // Handle folder contents (unchanged)
+            let folderContentsHtml = '';
             const folderContents = await fetchFolderContents(loginID, path + '/' + name);
 
-            // Generate HTML for each file/folder
             folderContentsHtml = folderContents
                 .map((item) => {
                     const icon = item.type === 'file' ? 'file' : 'folder';
@@ -272,7 +376,7 @@ app.get('/file/share/:token', async (req, res) => {
                                             <i data-feather="more-vertical"></i>
                                         </button>
                                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton${item.name}" onclick="event.stopPropagation()">
-                                            <li><a <a href="/file/share/${shareData.token}?path=${encodeURIComponent(path)}&filename=${encodeURIComponent(item.name)}" download="${item.name}">Download</a></a></li>
+                                            <li><a href="/file/share/${shareData.token}?path=${encodeURIComponent(path)}&filename=${encodeURIComponent(item.name)}" download="${item.name}">Download</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -281,50 +385,49 @@ app.get('/file/share/:token', async (req, res) => {
                     `;
                 })
                 .join('');
-        }
 
-        // Inject into the main HTML structure
-        const dynamicHtml = `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="utf-8" />
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <title>${name}</title>
-                <link
-                    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-                    rel="stylesheet"
-                />
-                <link rel="stylesheet" href="../styles/dashboard.css" />
-            </head>
-            <body>
-                <nav class="navbar navbar-expand-lg bg-body-tertiary">
+            // Return the HTML with the folder contents
+            const dynamicHtml = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="utf-8" />
+                    <meta name="viewport" content="width=device-width, initial-scale=1" />
+                    <title>${name}</title>
+                    <link
+                        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+                        rel="stylesheet"
+                    />
+                    <link rel="stylesheet" href="../styles/dashboard.css" />
+                </head>
+                <body>
+                    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                        <div class="container-fluid">
+                            <a class="navbar-brand text-primary fw-bold" href="#">DOODE</a>
+                        </div>
+                    </nav>
                     <div class="container-fluid">
-                        <a class="navbar-brand text-primary fw-bold" href="#">DOODE</a>
-                    </div>
-                </nav>
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-md-9 col-lg-10 p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h4 id="current-path">${name}</h4>
-                            </div>
-                            <div class="row g-3" id="fileContainer">
-                                ${folderContentsHtml}
+                        <div class="row">
+                            <div class="col-md-9 col-lg-10 p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 id="current-path">${name}</h4>
+                                </div>
+                                <div class="row g-3" id="fileContainer">
+                                    ${folderContentsHtml}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-                <script src="https://unpkg.com/feather-icons"></script>
-                <script>
-                    feather.replace();
-                </script>
-            </body>
-            </html>
-        `;
-
-        res.send(dynamicHtml);
+                    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+                    <script src="https://unpkg.com/feather-icons"></script>
+                    <script>
+                        feather.replace();
+                    </script>
+                </body>
+                </html>
+            `;
+            res.send(dynamicHtml);
+        }
     } catch (error) {
         console.error('Error fetching shared content:', error.message);
         res.status(500).send('Failed to fetch shared content.');

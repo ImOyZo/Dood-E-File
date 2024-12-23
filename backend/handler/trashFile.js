@@ -1,6 +1,8 @@
 const { exec } = require('child_process')
 const { fetchUsersFromID } = require('../models/users');
 const Client = require('ssh2-sftp-client')
+const { deleteFile } = require('../models/file');
+const { createLog } = require('../models/activityLog'); 
 const path = require('path');
 require('dotenv').config()
 
@@ -49,10 +51,11 @@ const handleListTrash = async (req, res, id) => {
             name: file.name,
             size: (file.size / (1024 * 1024)).toFixed(2),
             type: file.type === '-' ? 'file' : 'directory',
-            date: file.modifyTime ? new Date(file.modifyTime * 1000).toLocaleDateString() : 'N/A',
+            date: file.modifyTime ? new Date(file.modifyTime).toLocaleDateString() : 'N/A',
         }));
 
         res.json(files); // Send the list of files as JSON
+
     } catch (err) {
         console.error('Error listing files:', err.message);
         res.status(500).send('Failed to list files.');
@@ -63,14 +66,15 @@ const handleListTrash = async (req, res, id) => {
 
 const handleMoveTrash = async (req, res, fileName, id) => {
     const user = await fetchUsersFromID(id);
+    const path = req.query.path || '/';
     console.log(user);
     if (!id || !fileName) {
         return res.status(400).send('Missing userID or filename');
     }
-    const oldPath = `/home/${user.username}/${fileName}`;
+    const oldPath = `/home/${user.username}${path}/${fileName.replace(/'/g, "\\'")}`;
     const trashPath = `/home/${user.username}/trash`;
     
-    const command = `mv ${oldPath} ${trashPath}`
+    const command = `mv "${oldPath}" "${trashPath}"`
     exec(command, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error executing command: ${stderr}`);
@@ -81,11 +85,12 @@ const handleMoveTrash = async (req, res, fileName, id) => {
         return res.status(200).send('File deleted successfully.');
 
     });
-
+    await createLog(id, id, `Moved file to trash: ${fileName}`);
 }
 
 const HandleRecoverFromTrash = async (req, res,fileName, id) => {
     const user = await fetchUsersFromID(id);
+    const path = req.query.path || '/';
 
     if (!id || !fileName) {
         return res.status(400).send('Missing userID or filename');
@@ -94,10 +99,10 @@ const HandleRecoverFromTrash = async (req, res,fileName, id) => {
     if (!user) {
         return res.status(404).send('User not found');
     }
-    const oldPath = `/home/${user.username}/trash/${fileName}`;
+    const oldPath = `/home/${user.username}${path}/trash/${fileName.replace(/'/g, "\\'")}`;
     const newPath = `/home/${user.username}/`;
 
-    const command = `mv ${oldPath} ${newPath}`;
+    const command = `mv "${oldPath}" "${newPath}"`;
     exec(command, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error executing command: ${stderr}`);
@@ -121,17 +126,21 @@ const handleFileDelete = async (req, res, fileName, id) => {
     if (!user) {
         return res.status(404).send('User not found');
     }
+    
+    await deleteFile(id, fileName);
 
-    const command = `rm -rf /home/${user.username}/trash/${fileName}`;
+    const trashDir = `/home/${user.username}/trash/${fileName.replace(/'/g, "\\'")}`;
+    const command = `rm -rf "${trashDir}"`;
     exec(command, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error executing command: ${stderr}`);
             return res.status(500).send('Failed to delete file via SSH.');
         }
-
         console.log(`File deleted: ${stdout}`);
         return res.status(200).send('File deleted successfully.');
     });
+    await createLog(id, id, `Deleted file: ${fileName}`);
+ 
         
 };
 

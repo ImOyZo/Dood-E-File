@@ -5,63 +5,7 @@ function getCookie(name){
     if (parts.length === 2) return parts.pop().split(';').shift();
 }
 
-async function showNotifications() {
-    const loginID = getCookie('loginID');
-    const notificationsList = document.getElementById('notificationsList');
-
-    if (!loginID) {
-        window.location.href = '/frontend/pages/login.html';
-        return;
-    }
-
-    try {
-        const response = await fetch(`/notification/list`, {
-            method: 'GET',
-            headers: {
-                'user-id': loginID
-            },
-            credentials: 'include'
-            });
-        if (!response.ok) {
-            throw new Error('Failed to fetch notifications');
-        }
-        const notifications = await response.json();
-        notificationsList.innerHTML = ''; // Clear previous notifications
-
-        // Populate notifications
-        notifications.forEach((logs) => {
-            const listItem = document.createElement('li');
-            listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
-            listItem.innerHTML = `
-                <span>${logs.action}</span>
-                <small class="text-muted">${logs.date}</small>
-        `;
-        notificationsList.appendChild(listItem);
-        });
-    
-    } catch (error) {
-        console.error('Error fetching notifications:', error);
-        alert('Failed to fetch notifications.');
-    }
-    // Show the modal
-    const notificationsModal = new bootstrap.Modal(document.getElementById('notificationsModal'));
-    notificationsModal.show();
-}
-
-// Add event listener to the bell icon
-document.getElementById('bell').addEventListener('click', (event) => {
-    event.preventDefault();
-    showNotifications();
-});
-
-document.getElementById('user').addEventListener('click', () => {
-    const loginID = getCookie('loginID');
-    window.location.href = `/frontend/pages/userprofile.html?userID=${loginID}`;
-});
-
-// Delete file from user workspace (added trash soon)
 async function moveToTrash(filename) {
-    currentPath = currentPath;
     const loginID = getCookie('loginID');
 
     if (!loginID) {
@@ -69,7 +13,7 @@ async function moveToTrash(filename) {
         return;
     }
     try {
-        const response = await fetch(`/file/trash/${filename}?path=${encodeURIComponent(currentPath)}`, {
+        const response = await fetch(`/file/trash/${filename}`, {
             method: 'POST',
             headers: {
                 'user-id': loginID
@@ -88,156 +32,6 @@ async function moveToTrash(filename) {
         console.error('Delete error:', error);
         alert('An error occurred while deleting the file.');
     }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const uploadZone = document.getElementById('upload-zone');
-    const fileInput = document.getElementById('file-upload');
-
-    // Prevent default behavior for drag and drop
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
-        uploadZone.addEventListener(event, (e) => {
-            e.preventDefault(); // Prevent default behavior
-            e.stopPropagation(); // Stop propagation
-        });
-    });
-
-    // Highlight the drop zone when dragging over
-    uploadZone.addEventListener('dragenter', () => {
-        console.log('File is being dragged over the upload zone.');
-        uploadZone.setAttribute('data-dragging', 'true');
-    });
-
-    uploadZone.addEventListener('dragover', () => {
-        uploadZone.setAttribute('data-dragging', 'true');
-    });
-
-    // Remove highlight when dragging leaves
-    uploadZone.addEventListener('dragleave', () => {
-        console.log('Left file upload zone');
-        uploadZone.setAttribute('data-dragging', 'false');
-    });
-
-    // Handle file drop
-    uploadZone.addEventListener('drop', (e) => {
-        uploadZone.setAttribute('data-dragging', 'false');
-
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleFiles(files); // Pass the dropped files directly
-        }
-    });
-
-    // Handle file selection via browse
-    fileInput.addEventListener('change', (e) => {
-        const files = e.target.files;
-        if (files.length > 0) {
-            handleFiles(files); // Handle selected files
-        }
-    });
-
-    function handleFiles(files) {
-        if (files && files.length > 0) {
-            uploadFile(files[0])}
-    }
-});
-
-async function createFolder(){
-    currentPath = currentPath;
-    var folderName = document.getElementById('folderName').value;
-    console.log(currentPath)
-    console.log('Folder Path:', currentPath);
-    if(!folderName){
-        alert('Please input folder name');
-    }
-    const loginID = getCookie('loginID')
-    try {
-        const response = await fetch(`/file/createfolder?path=${encodeURIComponent(currentPath)}`, {
-            method: 'POST',
-            headers: {
-                'user-id': loginID,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({folderName: folderName}),
-            credentials: 'include'
-        })
-        if (response.ok) {
-            alert('Folder Created successfully!');
-            const createFolderModal = bootstrap.Modal.getInstance(document.getElementById('createFolderModal'));
-            createFolderModal.hide();
-            document.getElementById('folderName').value = '';
-            // Refresh list in dashboard after success creation
-            if (typeof fetchFiles === 'function') {
-                fetchFiles();
-            }
-        } else {
-            alert('Upload failed');
-        }
-    } catch(err){
-        console.log('Creating folder Error', err)
-        alert('Failed Creating Folder', err)
-    }
-}
-
-// Upload file to user dashboard
-    async function uploadFile(file) {
-
-        if (!file) {
-            alert('Please select a file first!');
-            return;
-        }
-        const folderPath = document.getElementById('uploadPath').value;
-        // Append the uploaded file
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('folderPath', currentPath);
-
-        const loginID = getCookie('loginID');
-        if (!loginID) {
-            window.location.href = '/frontend/pages/login.html'; 
-            return;
-        }
-        try {
-            xhr = new XMLHttpRequest()
-            // Send teh appended file to /upload routes
-            xhr.open('POST',`/file/upload?path=${encodeURIComponent(folderPath)}`, true);
-            xhr.setRequestHeader('user-id', loginID);
-            xhr.withCredentials = true;
-
-            xhr.upload.onprogress = function(event){
-                if(event.lengthComputable){
-                    const percent  = (event.loaded / event.total) * 100;
-                    document.getElementById('uploadProgress').style.width = percent + '%';
-                    document.getElementById('uploadProgress').textContent = Math.round(percent) + '%';
-                }
-            };
-            
-            xhr.onload = function() {
-                if(xhr.status === 200){
-                    alert('File uploaded successfully!');
-                    const uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
-                    uploadModal.hide();
-                    document.getElementById('uploadProgress').style.width = '0%'
-                    document.getElementById('uploadProgress').textContent = '0%'
-                    // Optionally refresh the list after successful upload
-                    if (typeof fetchFiles === 'function') {
-                        fetchFiles();
-                    } 
-                } else {
-                    alert('upload failed')
-                }
-            };
-
-            xhr.onerror = function() {
-                console.error('Error during upload');
-                alert('Upload error');
-            };
-
-            xhr.send(formData);
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Upload error');
-        }
 }
 
 // Download File Function
@@ -283,63 +77,11 @@ async function downloadFile(filename) {
     }
 }
 
-// Open modal for renaming file
-async function openRenameModal(filename) {
-    document.getElementById('oldFileName').value = filename;
-    const renameModal = new bootstrap.Modal(document.getElementById('renameModal'));
-    renameModal.show();
-}
-
-// Renaming File/Folder function 
-async function renameFile() {
-    const loginID = getCookie('loginID')
-    const newName = document.getElementById('newFileName').value;
-    const oldFileName = document.getElementById('oldFileName').value;
-
-    if (newName && oldFileName) {
-        try {
-            const response = await fetch(`/file/renamefile?path=${encodeURIComponent(currentPath)}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'user-id': loginID,
-                }, 
-                credentials: 'include',
-                body: JSON.stringify({
-                    newName: newName,
-                    oldFileName: oldFileName,
-                    
-                })
-            });
-
-            const result = await response.json();
-            if (response.ok) {
-                alert('File Rename Success');
-                fetchFiles();
-                document.getElementById('newFileName').value = '';
-            } else {
-                alert(result.message || 'Error Renaming File');
-            }
-            
-            const renameModal = bootstrap.Modal.getInstance(document.getElementById('renameModal'));
-            renameModal.hide();
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    } else {
-        alert('Enter Valid New Name');
-    }
-}
-
-
 function sortAndSearchFiles(sortKey) {
     const searchQuery = document.getElementById('searchInput').value;
     fetchFiles(searchQuery, sortKey);
 }
 
-
-// Set Fetching File Dir
-// Start at the root directory
 let currentPath = '/'; 
 function setUploadPath(){
     document.getElementById('uploadPath').value = currentPath;
@@ -359,7 +101,7 @@ async function fetchFiles(searchQuery = '', sortKey = null){
 
     try {
         // Fetch /files from the Backend
-        const response = await fetch(`/file/list?loginID=${loginID}&path=${encodeURIComponent(currentPath)}&search=${encodeURIComponent(searchQuery)}&sort=${encodeURIComponent(sortKey)}`, {
+        const response = await fetch(`/file/starred/list?loginID=${loginID}&path=${encodeURIComponent(currentPath)}&search=${encodeURIComponent(searchQuery)}&sort=${encodeURIComponent(sortKey)}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -383,7 +125,6 @@ async function fetchFiles(searchQuery = '', sortKey = null){
             container.innerHTML = `
             <div class="text-center mt-5">
                 <p>No files uploaded yet.</p>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#actionModal">Upload or Create Folder</button>
             </div>`;
             return;
         }
@@ -418,6 +159,7 @@ async function fetchFiles(searchQuery = '', sortKey = null){
         // Populate the container with file cards
         files.forEach((file) => {
             const isDirectory = file.type === 'directory'; // Check if the file is a directory
+            console.log("File path:", file.path); 
             container.innerHTML += `
                 <div class="col-6 col-sm-4 col-md-3 file-card" onclick="handleFileClick('${file.name}', ${isDirectory})">
                     <div class="card">
@@ -434,9 +176,9 @@ async function fetchFiles(searchQuery = '', sortKey = null){
                                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton${file.name}" onclick="event.stopPropagation()">
                                     <li><a class="dropdown-item" onclick="previewFileOrFolder('${file.name}', ${isDirectory})">Preview</a></li>
                                     <li><a class="dropdown-item" onclick="downloadFile('${file.name}', '${file.path}')">Download</a></li>
-                                    <li><a class="dropdown-item" onclick="starredFile('${file.name}')">Starred</a></li>
+                                    <li><a class="dropdown-item" onclick="removeStarredFile('${file.name}')">Remove Starred</a></li>
                                     <li><a class="dropdown-item" onclick="openRenameModal('${file.name}')">Rename</a></li>
-                                    ${isDirectory ?`<li><a class="dropdown-item" onclick="share('${file.name}','${isDirectory}')">Share</a></li>` : ''}
+                                    <li><a class="dropdown-item" onclick="share('${file.name}','${isDirectory}')">Share</a></li>
                                     <li><a class="dropdown-item text-danger" onclick="moveToTrash('${file.name}')">Delete</a></li>
                                 </ul>
                             </div>
@@ -453,7 +195,7 @@ async function fetchFiles(searchQuery = '', sortKey = null){
     }
 }
 
-async function starredFile(filename) {
+async function removeStarredFile(filename) {
     const loginID = getCookie('loginID');
 
     if (!loginID) {
@@ -463,7 +205,7 @@ async function starredFile(filename) {
     }
 
     try {
-        const response = await fetch(`/file/starred/add/${filename}`, {
+        const response = await fetch(`/file/starred/remove/${filename}`, {
             method: 'POST',
             headers: {
                 'user-id': loginID
@@ -474,6 +216,7 @@ async function starredFile(filename) {
 
         if (response.ok) {
             alert('File has been starred successfully.');
+            fetchFiles();
         } else {
             alert('Failed to starring file.');
         }
@@ -590,7 +333,6 @@ async function previewFileOrFolder(fileName, isDirectory) {
     }
 }
 
-
 // Function to handle file/folder click
 function handleFileClick(name, isDirectory) {
     if (isDirectory) {
@@ -636,7 +378,10 @@ async function share(name, isDirectory) {
         if (response.ok) {
             const result = await response.json();
             const shareLink = result.shareLink;
-            window.open(shareLink, '_blank');
+            alert(`Share link: ${shareLink}`);
+            navigator.clipboard.writeText(shareLink)
+                .then(() => alert('Share link copied to clipboard!'))
+                .catch(err => console.error('Failed to copy link: ', err));
         } else {
             alert('Failed to create share link.');
         }
@@ -646,6 +391,4 @@ async function share(name, isDirectory) {
     }
 }
 
-
-// Call fetchFile() on load
-fetchFiles();
+fetchFiles()

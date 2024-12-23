@@ -11,7 +11,7 @@
       crossorigin="anonymous"
     />
     <!-- CSS Style -->
-    <link rel="stylesheet" href="../styles/dashboard.css" />
+    <link rel="stylesheet" href="../styles/starred.css" />
   </head>
   <body>
     <!-- Navbar -->
@@ -33,6 +33,9 @@
           <a href="#" id="bell" class="me-3">
             <i data-feather="bell"></i>
           </a>
+          <a href="#" id="settings" class="me-3">
+            <i data-feather="settings"></i>
+          </a>
           <a href="#" id="user">
             <i data-feather="user"></i>
           </a>
@@ -47,12 +50,12 @@
         <div class="col-md-3 col-lg-2 bg-light vh-100">
           <ul class="nav flex-column p-3">
             <li class="nav-item">
-              <a class="nav-link active text-primary" href="#">
+              <a class="nav-link text-dark" href="dashboard.html">
                 <i data-feather="folder" class="me-2"></i>My Drive
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-dark" href="starred.html">
+              <a class="nav-link active text-primary" href="#">
                 <i data-feather="star" class="me-2"></i>Starred
               </a>
             </li>
@@ -91,88 +94,8 @@
               </ul>
             </div>
           </div>
-          <div class="plusicon fixed-bottom-right">
-            <a id="plus" data-bs-toggle="modal" data-bs-target="#actionModal">
-              <i data-feather="plus"></i>
-            </a>
-          </div>
           <div class="row g-3" id="fileContainer"></div>
-          
-          <!-- Action Selection Modal -->
-          <div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="actionModalLabel">Choose Action</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <button class="btn btn-outline-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#createFolderModal" data-bs-dismiss="modal">
-                    Create Folder
-                  </button>
-                  <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#uploadModal" data-bs-dismiss="modal" onclick="setUploadPath()">
-                    Upload File
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Upload File Modal-->
-          <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="uploadModalLabel">Upload Document</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="upload-zone" id="upload-zone" data-dragging="false">
-                            <i class="bi bi-upload upload-icon"></i>
-                            <p class="mt-2">Drag and drop your file here, or 
-                                <label for="file-upload" class="text-primary">browse</label>
-                            </p>
-                            <input type="file" id="file-upload" />
-                        </div>
-                        <input type="hidden" id="uploadPath"/>
-                        <div class="p-3">
-                          <div class="progress">
-                            <div
-                              id="uploadProgress"
-                              class="progress-bar bg-primary"
-                              role="progressbar"
-                              style="width: 0%"
-                              aria-valuenow="0"
-                              aria-valuemin="0"
-                              aria-valuemax="100"
-                            >0%</div>
-                          </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-          </div>
-          
-          <!-- Create Folder Modal -->
-          <div class="modal fade" id="createFolderModal" tabindex="-1" aria-labelledby="createFolderModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="createFolderModalLabel">Create Folder</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <label for="folderName">Enter folder name:</label>
-                  <input type="text" class="form-control" id="folderName" value="" />
-                  <input type="hidden" id="folderPath" />
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  <button type="button" class="btn btn-primary" onclick="createFolder()">Create Folder</button>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Rename Modal -->
           <div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameModalLabel" aria-hidden="true">
@@ -217,29 +140,9 @@
       </div>
     </div>
 
-    <!-- Notifications Modal -->
-<div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="notificationsModalLabel">Notifications</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <ul class="list-group" id="notificationsList">
-          <!-- Notifications will be dynamically added here -->
-        </ul>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>
-    <script src="../script/dashboard.js"></script>
+    <script src="../script/starred.js"></script>
   </body>
 </html>

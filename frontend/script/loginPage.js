@@ -19,7 +19,7 @@ async function login(){
             if (response.ok) {
                 alert('Login successful!');
                 document.cookie = `loginID=${result.userID}; path=/; max-age=3600`;
-                window.location.href = `/frontend2/pages/dashboard.html?loginID=${result.userID}`;
+                window.location.href = `/frontend/pages/dashboard.html?loginID=${result.userID}`;
                 
             } else {
                 alert(result.message);

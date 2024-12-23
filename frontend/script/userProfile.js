@@ -69,7 +69,7 @@ async function editUser() {
         const result = await response.json();
         if(result.success){
             alert('User Updated');
-            window.location.href = `/frontend/pages/usermanagement.html?loginID=${loginID}`;
+            window.location.href = `/frontend/pages/dashboard.html?loginID=${loginID}`;
         } else{
             alert('Error updating user');
         }

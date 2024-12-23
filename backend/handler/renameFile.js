@@ -4,30 +4,36 @@ const { fetchFilePath } = require('../models/file');
 const pathModule = require('path');
 require('dotenv').config();
 
-const handleRenameFile = async (req, res, id) => {
+const handleRenameFile = async (req, res, path, newName, oldFileName, id) => {
+    const user = await fetchUsersFromID(id);
     const sftp = new Client();
+    const baseDir = `/home/${user.username}${path}/`
+
+    // const remoteDir = path;
+    // remoteDir = remoteDir.replace(/\/+$/, '');  // Remove trailing slashes
+    console.log('Base Directory:', baseDir);
+    const oldFilePath = pathModule.join(baseDir, oldFileName);
+    console.log('Old File Location: ', oldFilePath)
+
 
     try {
-        const { path, newName, userID } = req.body;
 
-        if (!path || !newName || !userID) {
+        if (!path || !newName || !id) {
             return res.status(400).json({ message: "Missing required fields: path, newName, or userID." });
         }
 
-        const user = await fetchUsersFromID(id);
+
         if (!user) {
             return res.status(404).json({ message: "User not found." });
         }
 
         // Fetch file path details from DB
-        const fileDetails = await fetchFilePath(path);
+        const fileDetails = await fetchFilePath(oldFilePath);
         if (!fileDetails || !fileDetails.path) {
             return res.status(404).json({ message: "File not found in the database." });
         }
 
-        const oldFilePath = fileDetails.path; 
-        const directory = pathModule.dirname(oldFilePath); 
-        const newFilePath = pathModule.join(directory, newName); 
+        const newFilePath = pathModule.join(baseDir, newName); 
 
         await sftp.connect({
             host: process.env.host,
@@ -35,6 +41,11 @@ const handleRenameFile = async (req, res, id) => {
             username: user.username,
             password: user.password,
         });
+
+        const existingFiles = await sftp.list(baseDir);
+        if (existingFiles.some(file => file.name === newName)) {
+            return res.status(400).json({ message: "A file with the new name already exists." });
+        }
 
         // Rename the file on the server
         await sftp.rename(oldFilePath, newFilePath);

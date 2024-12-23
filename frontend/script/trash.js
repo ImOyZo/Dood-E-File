@@ -8,7 +8,7 @@ async function recoverFile(filename) {
     const loginID = getCookie('loginID');
 
     if (!loginID) {
-        window.location.href = '/frontend2/pages/login.html';
+        window.location.href = '/frontend/pages/login.html';
         return;
     }
     try {
@@ -37,7 +37,7 @@ async function deleteFile(filename) {
     const loginID = getCookie('loginID');
 
     if (!loginID) {
-        window.location.href = '/frontend2/pages/login.html';
+        window.location.href = '/frontend/pages/login.html';
         return;
     }
     try {
@@ -69,7 +69,7 @@ async function fetchFilesTrash(){
 
     if (!loginID) {
         //alert('You must log in first!');
-        window.location.href = '/frontend2/pages/login.html'; // Redirect to login if no userID found
+        window.location.href = '/frontend/pages/login.html'; // Redirect to login if no userID found
         return;
     }
 

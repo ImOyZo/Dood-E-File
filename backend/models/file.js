@@ -55,18 +55,48 @@ async function fetchStarred(ownerID) {
             FROM file
             WHERE ownerid = ? AND starred = TRUE
             `, [ownerID])
-        return result[0]
+        return result;
     } catch (error) {
         console.error(error)
         return error
     }
 }
 
-async function createFile(fileName, fileSize, ownerID, path) {
+async function updateStarredTrue(ownerID, fileName) {
     try {
         const [result] = await pool.query(`
+            UPDATE file
+            SET starred = TRUE
+            WHERE ownerID = ? AND fileName = ?
+            `, [ownerID, fileName])
+        return result
+    } catch (error) {
+        console.error(error)
+        return error
+    }
+}
+
+async function updateStarredFalse(ownerID, fileName) {
+    try {
+        const [result] = await pool.query(`
+            UPDATE file
+            SET starred = FALSE
+            WHERE ownerID = ? AND fileName = ?
+            `, [ownerID, fileName])
+        return result
+    } catch (error) {
+        console.error(error)
+        return error
+    }
+}   
+
+async function createFile(fileName, fileSize, ownerID, path) {
+    try {
+        const normalizedPath = path.replace(/\/\//g, '/');
+
+        const [result] = await pool.query(`
             INSERT INTO file (fileName, fileSize, ownerID, path) VALUES (?, ?, ?,?)`
-            , [fileName, fileSize, ownerID, path])
+            , [fileName, fileSize, ownerID, normalizedPath])
         return fetchFile(ownerID, fileName)
     } catch (error) {
         console.error(error)
@@ -74,12 +104,12 @@ async function createFile(fileName, fileSize, ownerID, path) {
     }
 }
 
-async function deleteFile(ownerID, fileName, path) {
+async function deleteFile(ownerID, fileName) {
     try {
         const [result] = await pool.query(`
             DELETE FROM file
-            WHERE ownerID = ? AND fileName = ? AND path = ?
-            `, [ownerID, fileName, path])
+            WHERE ownerID = ? AND fileName = ? 
+            `, [ownerID, fileName])
         return result
     } catch (error) {
         console.error(error)
@@ -107,5 +137,7 @@ module.exports = {
     deleteFile,
     createFile,
     fetchStarred,
-    fetchFilePath
+    fetchFilePath,
+    updateStarredFalse,
+    updateStarredTrue,
 }

@@ -7,7 +7,7 @@ function getCookie(name) {
 async function deleteUser(userID) {
     const loginID = getCookie('loginID')
     if (!loginID) {
-        window.location.href = '/frontend2/pages/login.html';
+        window.location.href = '/frontend/pages/login.html';
         return;
     }
     try {
@@ -34,7 +34,7 @@ async function deleteUser(userID) {
 async function editUser(userID) {
     const loginID = getCookie('loginID')
     if (!loginID) {
-        window.location.href = '/frontend2/pages/login.html';
+        window.location.href = '/frontend/pages/login.html';
         return;
     }
     jsonData = {
@@ -76,7 +76,7 @@ async function editUser(userID) {
 async function fetchUser() {
     const loginID = getCookie('loginID')
     if (!loginID) {
-        window.location.href = '/frontend2/pages/login.html';
+        window.location.href = '/frontend/pages/login.html';
         return;
     }
 
@@ -152,7 +152,7 @@ function buttonListener(){
             const userID = event.target.getAttribute('data-id');  // Get the userID from the data-id attribute
 
             // Redirect to the edit profile page, passing the userID as a query parameter
-            window.location.href = `/frontend2/pages/useredit.html?loginID=${loginID}&userID=${userID}`;
+            window.location.href = `/frontend/pages/useredit.html?loginID=${loginID}&userID=${userID}`;
         }
     });
 }

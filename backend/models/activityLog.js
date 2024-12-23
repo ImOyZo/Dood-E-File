@@ -10,7 +10,7 @@ const pool = mysql.createPool({
 async function fetchLogs(userID) {
     try {
         const [result] = await pool.query(`
-            SELECT * FROM activityLog 
+            SELECT * FROM activitylog 
             WHERE userID = ?
             `, [userID])
         return result
@@ -23,7 +23,7 @@ async function fetchLogs(userID) {
 async function fetchLogAction(ownerID, actionType) {
     try {
         const [result] = await pool.query(`
-            SELECT * FROM activityLog 
+            SELECT * FROM activitylog 
             WHERE ownerID = ? AND actionType = ?
             `, [ownerID, actionType])
         return result
@@ -33,12 +33,12 @@ async function fetchLogAction(ownerID, actionType) {
     }
 }
 
-async function createLog(userID, targetID, actionType) {
+async function createLog(userID, targetID, actionType, actionDate) {
     try {
         const [result] = await pool.query(`
-            INSERT INTO activityLog (userID, targetID, actionType)
-            VALUES (?, ?, ?)
-            `, [userID, targetID, actionType])
+            INSERT INTO activitylog (userID, targetID, actionType, actionDate)
+            VALUES (?, ?, ?, ?)
+            `, [userID, targetID, actionType, actionDate])
         return result
     } catch (error) {
         console.error(error)
@@ -49,7 +49,7 @@ async function createLog(userID, targetID, actionType) {
 async function deleteLog(logID) {
     try {
         const [result] = await pool.query(`
-            DELETE FROM activityLog
+            DELETE FROM activitylog
             WHERE logID = ?
             `, [logID])
         return result
@@ -60,6 +60,7 @@ async function deleteLog(logID) {
 }
 
 module.exports = {
+    fetchLogs,
     deleteLog, 
     createLog, 
     fetchLogAction,
